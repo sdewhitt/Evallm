@@ -16,7 +16,7 @@ export default function Home() {
 
   const [message, setMessage] = useState("");
   //const [messages, setMessages] = useState<Message[]>([{ role: "ai", content: "Hello! How can I help you today?" },]);
-  //const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
 
@@ -43,7 +43,7 @@ export default function Home() {
       console.log("response:", response);
       // Retrieve MULTIPLE LLM responses
 
-      //const data = await response.json();
+      const data = await response.json();
       
       // Display each LLM response
       //const aiMessage: Message = { role: 'ai', content: data.message };
