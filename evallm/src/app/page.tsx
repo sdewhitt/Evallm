@@ -1,34 +1,60 @@
 "use client";
 import { useState } from "react";
+/*
+type Link = {
+  summary: string; // The AI-generated summary
+  url: string;     // The corresponding hyperlink
+};
+type Message = {
+  role: "user" | "ai";
+  content: string;
+  links?: Link[];
+};
+*/
 
 export default function Home() {
 
-
+  const [message, setMessage] = useState("");
+  //const [messages, setMessages] = useState<Message[]>([{ role: "ai", content: "Hello! How can I help you today?" },]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+
+
+  const handleSubmit = async () => {
+    if (!message.trim()) return;
+
+    // Add user message to the conversation
+    const userMessage = { role: "user" as const, content: message };
+    //setMessages(prev => [...prev, userMessage]);
+    setMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/generate-image", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ message }),
       });
 
+      // Retrieve MULTIPLE LLM responses
+
       const data = await response.json();
-      console.log(data);
-      setInputText("");
+
+      // Display each LLM response
+      //const aiMessage: Message = { role: 'ai', content: data.message };
+      //setMessages((prev) => [...prev, aiMessage]);
+
+
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-indigo-950">
