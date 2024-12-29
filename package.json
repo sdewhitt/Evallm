@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "groq-sdk": "^0.9.1"
+    "groq-sdk": "^0.9.1",
+    "string-similarity": "^4.0.4"
+  },
+  "devDependencies": {
+    "@types/string-similarity": "^4.0.2"
   }
 }

@@ -1,5 +1,7 @@
 import Groq from 'groq-sdk';
-// TODO: Import more LLMs
+import OpenAI from 'openai';
+import stringSimilarity from 'string-similarity';
+
 
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY,
@@ -15,14 +17,22 @@ export async function POST(req: Request) {
 
         // Call function to retrieve output for each LLM
         const LLMs = ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-        const llmResponseList: { [key: string]: Promise<any> } = {};
+        const llmResponseList: { [key: string]: any } = {};
 
-        for (const model of LLMs) {
-            llmResponseList[model] = llmResponse(body.message, model);
-        }
+        const responses = await Promise.all(
+            LLMs.map(model => llmResponse(model, body.message, body.expectedOutput))
+        );
+
+        LLMs.forEach((model, index) => {
+            llmResponseList[model] = responses[index];
+        });
 
 
-        return new Response(JSON.stringify({ message: llmResponseList }), {
+        //console.log('\n\n\n\nLLM Response List:', llmResponseList);
+
+
+
+        return new Response(JSON.stringify({ results: llmResponseList }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
@@ -35,9 +45,10 @@ export async function POST(req: Request) {
 }
 
 
-async function llmResponse(userPrompt: string, model: string) {
-    const systemPrompt = "You are an LLM who answers questions.";
+async function llmResponse(model: string, userPrompt: string, expectedOutput: string) {
+    const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output.";
 
+    const start = performance.now();
 
     const llmResponse = await groqClient.chat.completions.create({
             messages: [
@@ -49,10 +60,39 @@ async function llmResponse(userPrompt: string, model: string) {
     );
 
 
+    // Track response time
+    const responseTime = performance.now() - start;
+    console.log(`Response time for ${model}: ${responseTime} ms`);
+
     let response = llmResponse.choices[0].message.content;
     response = response ? response.trim() : '';
 
-    console.log(`\n${model} Chat completion:\n`, response);
+    console.log(`${model} Chat completion:`, response);
 
-    return response;
+    //return response;
+
+    // List of evaluation metrics: (inspired by G-Eval)
+    // 1. Response time
+    // 2. Exact match
+    // 3. Similarity, measured by cosine similarity
+    // 4. Relevance, measured by cosine similarity
+    // 5. BLEU score
+    // 6. ROUGE score
+    // 7. Perplexity
+
+    // Calculate cosine similarity
+    const cosineSimilarity = stringSimilarity.compareTwoStrings(expectedOutput, response);
+    console.log(`Cosine similarity: ${cosineSimilarity}\n`);
+
+
+    let evaluation = {
+        responseTime: responseTime,
+        exactMatch: expectedOutput === response,
+        similarity: cosineSimilarity,
+        relevance: 0,
+        bleu: 0,
+        rouge: 0,
+        perplexity: 0,
+    };
+    return [response, evaluation];
 }
