@@ -1,36 +1,27 @@
 "use client";
-import exp from "constants";
-import { useState } from "react";
-/*
-type Link = {
-  summary: string; // The AI-generated summary
-  url: string;     // The corresponding hyperlink
-};
-type Message = {
-  role: "user" | "ai";
-  content: string;
-  links?: Link[];
-};
-*/
+import React, { useState } from "react";
 
 export default function Home() {
 
   const [message, setMessage] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
-  //const [messages, setMessages] = useState<Message[]>([{ role: "ai", content: "Hello! How can I help you today?" },]);
+  
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
 
+  // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
     // Clear the input field
     setMessage("");
     setExpectedOutput("");
     setIsLoading(true);
     try {
-      if (!message.trim() && expectedOutput.trim()) throw new Error("Please enter a user prompt.");
-      if (!message.trim()) return;
+      if (!message.trim() || !expectedOutput.trim()) throw new Error("Please enter a user prompt and an expected output.");
 
       // Track the user prompt and expected output
       //const prompt = { role: "user" as const, content: message };
@@ -64,20 +55,48 @@ export default function Home() {
   };
 
 
+  /* ================================= Strict UI functions ================================= */
+
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
   return (
     <div className="min-h-screen flex bg-stone-800">
       
       <div className="flex-1 flex flex-col justify-between p-8">
         <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
 
-        <div className="fixed top-3 right-10 space-y-4 bg-emerald-700  p-3 rounded-xl">
+        <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
+          <button onClick={toggleSidebar}>Analytic Dashboards</button>
+        </div>
+
+        <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
           <button>Login</button>
         </div>
 
       </div>
 
+      {/* Sidebar */}
+      
+      {isSidebarVisible && (
+        <div>
 
-      {/* Error Modal */}
+
+          <div className="fixed inset-y-0 left-0 w-64 bg-stone-700 p-4 shadow-lg">
+          {/* Display Prompts:*/}
+
+          </div>
+
+          <div className = "fixed top-0 left-0 w-64 bg-stone-900 border-t border-gray-950 p-4">
+            <button className="text-xl font-semibold text-white" onClick={toggleSidebar}>Analytic Dashboards</button>
+            <p className="text-white">Click a below prompt to view its responses + evaluations.</p>
+          </div>
+        </div>
+
+      )}
+
+      {/* Error Box */}
       {error && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-stone-800 p-4 rounded-lg shadow-lg">

@@ -1,5 +1,4 @@
 import Groq from 'groq-sdk';
-import OpenAI from 'openai';
 import stringSimilarity from 'string-similarity';
 
 
@@ -46,7 +45,7 @@ export async function POST(req: Request) {
 
 
 async function llmResponse(model: string, userPrompt: string, expectedOutput: string) {
-    const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output.";
+    const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output that you do not have access to, so do not add fluff.";
 
     const start = performance.now();
 
@@ -73,12 +72,11 @@ async function llmResponse(model: string, userPrompt: string, expectedOutput: st
 
     // List of evaluation metrics: (inspired by G-Eval)
     // 1. Response time
-    // 2. Exact match
+    // 2. Exact match/Accuracy
     // 3. Similarity, measured by cosine similarity
-    // 4. Relevance, measured by cosine similarity
-    // 5. BLEU score
-    // 6. ROUGE score
-    // 7. Perplexity
+    // 4. BLEU score
+    // 5. ROUGE score
+    // 6. Perplexity
 
     // Calculate cosine similarity
     const cosineSimilarity = stringSimilarity.compareTwoStrings(expectedOutput, response);
@@ -89,7 +87,6 @@ async function llmResponse(model: string, userPrompt: string, expectedOutput: st
         responseTime: responseTime,
         exactMatch: expectedOutput === response,
         similarity: cosineSimilarity,
-        relevance: 0,
         bleu: 0,
         rouge: 0,
         perplexity: 0,
