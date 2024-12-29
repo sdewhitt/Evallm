@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import stringSimilarity from 'string-similarity';
 import { nGram } from 'n-gram';
+import { Rouge } from 'rouge';
 
 
 const groqClient = new Groq({
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
         const llmResponseList: { [key: string]: any } = {};
 
         const responses = await Promise.all(
-            LLMs.map(model => llmResponse(model, body.message, body.expectedOutput))
+            LLMs.map(model => llmResponseEvaluation(model, body.message, body.expectedOutput))
         );
 
         LLMs.forEach((model, index) => {
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
 }
 
 
-async function llmResponse(model: string, userPrompt: string, expectedOutput: string) {
+async function llmResponseEvaluation(model: string, userPrompt: string, expectedOutput: string) {
     const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output that you do not have access to, so do not add fluff.";
 
     const start = performance.now();
@@ -84,15 +85,16 @@ async function llmResponse(model: string, userPrompt: string, expectedOutput: st
     console.log(`Cosine similarity: ${cosineSimilarity}\n`);
 
 
+
     const evaluation = {
-        responseTime: responseTime,
-        exactMatch: expectedOutput === response,
-        similarity: cosineSimilarity,
-        bleu: 0,
-        rouge: 0,
-        perplexity: 0,
+        "responseTime": responseTime,
+        "exactMatch": expectedOutput === response,
+        "similarity": cosineSimilarity,
+        "bleu": calculateBleu(expectedOutput, response),
+        "rouge": 0,
+        "perplexity": 0,
     };
-    return [response, evaluation];
+    return {"response": response, "evaluation": evaluation};
 }
 
 
@@ -105,7 +107,7 @@ function calculateBleu(reference: string, candidate: string): number {
     const referenceTokens = reference.split(' ');
     const candidateTokens = candidate.split(' ');
 
-    const n = 4;
+    const n = 4; // bigram -> 4-gram
     let precision = 0;
     for (let i = 2; i <= n; i++) {
         const referenceNGram = nGram(i)(referenceTokens).map(ngram => [ngram]);
@@ -129,4 +131,10 @@ function calculatePrecision(referenceNgrams: string[][], candidateNgrams: string
     const matchingNgrams = [...candidateNgramSet].filter(ngram => referenceNgramSet.has(ngram)).length;
 
     return matchingNgrams / candidateNgrams.length;
+}
+
+function calculateRouge(reference: string, candidate: string) {
+    const rouge = new Rouge();
+    const scores = rouge.score(candidate, reference);
+    return scores;
 }

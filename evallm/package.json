@@ -10,16 +10,18 @@
   },
   "dependencies": {
     "groq-sdk": "^0.9.1",
+    "js-rouge": "^3.0.0",
     "n-gram": "^2.0.2",
     "next": "15.1.2",
     "openai": "^4.77.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "rouge": "^1.0.3",
     "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^20.17.10",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

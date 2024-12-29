@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "groq-sdk": "^0.9.1",
+    "rouge": "^1.0.3",
     "string-similarity": "^4.0.4"
   },
   "devDependencies": {
