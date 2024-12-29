@@ -1,4 +1,5 @@
 "use client";
+import exp from "constants";
 import { useState } from "react";
 /*
 type Link = {
@@ -15,30 +16,39 @@ type Message = {
 export default function Home() {
 
   const [message, setMessage] = useState("");
+  const [expectedOutput, setExpectedOutput] = useState("");
   //const [messages, setMessages] = useState<Message[]>([{ role: "ai", content: "Hello! How can I help you today?" },]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
 
 
   const handleSubmit = async () => {
-    if (!message.trim()) return;
-
-    // Add user message to the conversation
-    const userMessage = { role: "user" as const, content: message };
-    //setMessages(prev => [...prev, userMessage]);
+    // Clear the input field
     setMessage("");
+    setExpectedOutput("");
     setIsLoading(true);
-
-    console.log("Query:", userMessage);
-
     try {
+      if (!message.trim() && expectedOutput.trim()) throw new Error("Please enter a user prompt.");
+      if (!message.trim()) return;
+
+      // Track the user prompt and expected output
+      const prompt = { role: "user" as const, content: message };
+      const expected = { role: "user" as const, content: !expectedOutput.trim() ? expectedOutput : "N/A" };
+      
+
+
+
+    //console.log("Query:", prompt);
+    //console.log("Expected Output:", expected);
+
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, expectedOutput }),
       });
       console.log("response:", response);
       // Retrieve MULTIPLE LLM responses
@@ -51,7 +61,8 @@ export default function Home() {
 
 
     } catch (error) {
-      console.error("Error:", error);
+      //console.error("Error:", error instanceof Error ? error.message : "unknown");
+      setError(`${error instanceof Error ? error.message : "unknown"}`);
     } finally {
       setIsLoading(false);
     }
@@ -69,10 +80,30 @@ export default function Home() {
         </div>
 
       </div>
+
+
+      {/* Error Modal */}
+      {error && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-stone-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-red-600">Error</h2>
+            <p className="text-s text-red-600">{error}</p>
+            
+            <button
+              onClick={() => setError(null)}
+              className="mt-4 px-4 py-2 bg-red-600 text-stone-900 rounded-xl hover:bg-red-800 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
         
-        
-      {/* Input Area */}
+      {/* Bottom Bar */}
       <div className="fixed bottom-0 w-full bg-stone-900 border-t border-gray-950 p-4">
+
+        {/* Input Area */}
         <div className="max-w-3xl mx-auto">
           <div className="flex gap-3 items-center">
             <input
@@ -80,9 +111,19 @@ export default function Home() {
               value={message}
               onChange={e => setMessage(e.target.value)}
               onKeyPress={e => e.key === "Enter" && handleSubmit()}
-              placeholder="Type your message..."
+              placeholder="User Prompt..."
               className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
             />
+            <input
+              type="text"
+              value={expectedOutput}
+              onChange={e => setExpectedOutput(e.target.value)}
+              onKeyPress={e => e.key === "Enter" && message && handleSubmit()}
+              placeholder="Expected Output..."
+              className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
+            />
+
+
             <button
               onClick={handleSubmit}
               disabled={isLoading}
@@ -92,6 +133,9 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        
+
       </div>
 
       
