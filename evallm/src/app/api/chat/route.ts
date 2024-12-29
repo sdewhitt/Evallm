@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
 import stringSimilarity from 'string-similarity';
 import { nGram } from 'n-gram';
-import { Rouge } from 'rouge';
+import Rouge from 'rouge';
 
 
 const groqClient = new Groq({
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        console.log('Query:', body.message);
+        console.log('\nQuery:', body.message);
         console.log('Expected Output:', body.expectedOutput);
 
 
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
 
 async function llmResponseEvaluation(model: string, userPrompt: string, expectedOutput: string) {
-    const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output that you do not have access to, so do not add fluff.";
+    const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output that you do NOT have access to, so do not add fluff.";
 
     const start = performance.now();
 
@@ -63,7 +63,7 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
 
     // Track response time
     const responseTime = performance.now() - start;
-    console.log(`Response time for ${model}: ${responseTime} ms`);
+    console.log(`\nResponse time for ${model}: ${responseTime} ms`);
 
     let response = llmResponse.choices[0].message.content;
     response = response ? response.trim() : '';
@@ -82,16 +82,22 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
 
     // Calculate cosine similarity
     const cosineSimilarity = stringSimilarity.compareTwoStrings(expectedOutput, response);
-    console.log(`Cosine similarity: ${cosineSimilarity}\n`);
+    console.log(`Cosine similarity: ${cosineSimilarity}`);
+
+    const bleuScore = calculateBleu(expectedOutput, response);
+    console.log(`BLEU: ${bleuScore}`);
 
 
+    const nGrams = 3;
+    const rougeScores = calculateRougeN(expectedOutput, response, nGrams);
+    console.log(`ROUGE 1-${nGrams}: ${rougeScores}`);
 
     const evaluation = {
         "responseTime": responseTime,
         "exactMatch": expectedOutput === response,
         "similarity": cosineSimilarity,
-        "bleu": calculateBleu(expectedOutput, response),
-        "rouge": 0,
+        "bleu": bleuScore,
+        "rouge": rougeScores,
         "perplexity": 0,
     };
     return {"response": response, "evaluation": evaluation};
@@ -133,8 +139,35 @@ function calculatePrecision(referenceNgrams: string[][], candidateNgrams: string
     return matchingNgrams / candidateNgrams.length;
 }
 
-function calculateRouge(reference: string, candidate: string) {
-    const rouge = new Rouge();
-    const scores = rouge.score(candidate, reference);
-    return scores;
+
+function getNGrams(tokens: string[], n: number): string[] {
+    const nGrams: string[] = [];
+    for (let i = 0; i <= tokens.length - n; i++) {
+        nGrams.push(tokens.slice(i, i + n).join(' '));
+    }
+    return nGrams;
+}
+
+function calculateRougeN(reference: string, candidate: string, n: number): number[] {
+    const referenceTokens = reference.split(' ');
+    const candidateTokens = candidate.split(' ');
+
+
+    let f1Scores = [];
+    for (let i = 1; i <= n; i++) {
+        const referenceNGrams = getNGrams(referenceTokens, i);
+        const candidateNGrams = getNGrams(candidateTokens, i);
+    
+        const referenceNGramSet = new Set(referenceNGrams);
+        const candidateNGramSet = new Set(candidateNGrams);
+    
+        const matchingNGrams = [...candidateNGramSet].filter(ngram => referenceNGramSet.has(ngram)).length;
+    
+        const precision = matchingNGrams / candidateNGrams.length;
+        const recall = matchingNGrams / referenceNGrams.length;
+        const f1Score = (2 * precision * recall) / (precision + recall);
+        f1Scores.push(f1Score);
+    }
+
+    return f1Scores;
 }
