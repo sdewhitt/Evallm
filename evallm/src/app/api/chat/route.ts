@@ -83,7 +83,7 @@ async function llmResponse(model: string, userPrompt: string, expectedOutput: st
     console.log(`Cosine similarity: ${cosineSimilarity}\n`);
 
 
-    let evaluation = {
+    const evaluation = {
         responseTime: responseTime,
         exactMatch: expectedOutput === response,
         similarity: cosineSimilarity,
