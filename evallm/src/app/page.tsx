@@ -68,7 +68,7 @@ export default function Home() {
         <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
 
         <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
-          <button onClick={toggleSidebar}>Analytic Dashboards</button>
+          <button onClick={toggleSidebar}>Prompts</button>
         </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
@@ -88,8 +88,8 @@ export default function Home() {
 
           </div>
 
-          <div className = "fixed top-0 left-0 w-64 bg-stone-900 border-t border-gray-950 p-4">
-            <button className="text-xl font-semibold text-white" onClick={toggleSidebar}>Analytic Dashboards</button>
+          <div className = "fixed top-0 left-0 w-64 bg-emerald-900 p-4">
+            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>Prompts</button>
             <p className="text-white">Click a below prompt to view its responses + evaluations.</p>
           </div>
         </div>
