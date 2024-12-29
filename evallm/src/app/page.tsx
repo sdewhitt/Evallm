@@ -78,7 +78,6 @@ export default function Home() {
       </div>
 
       {/* Sidebar */}
-      
       {isSidebarVisible && (
         <div>
 

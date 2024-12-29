@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk';
 import stringSimilarity from 'string-similarity';
+import { nGram } from 'n-gram';
 
 
 const groqClient = new Groq({
@@ -92,4 +93,40 @@ async function llmResponse(model: string, userPrompt: string, expectedOutput: st
         perplexity: 0,
     };
     return [response, evaluation];
+}
+
+
+
+
+
+
+// Function to calculate BLEU score
+function calculateBleu(reference: string, candidate: string): number {
+    const referenceTokens = reference.split(' ');
+    const candidateTokens = candidate.split(' ');
+
+    const n = 4;
+    let precision = 0;
+    for (let i = 2; i <= n; i++) {
+        const referenceNGram = nGram(i)(referenceTokens).map(ngram => [ngram]);
+        const candidateNGram = nGram(i)(candidateTokens).map(ngram => [ngram]);
+
+        const nGramPrecision = calculatePrecision(referenceNGram, candidateNGram);
+        precision += nGramPrecision;
+    }
+
+    precision /= n;
+
+    const brevityPenalty = Math.min(1, Math.exp(1 - referenceTokens.length / candidateTokens.length));
+
+    return brevityPenalty * precision;
+}
+
+function calculatePrecision(referenceNgrams: string[][], candidateNgrams: string[][]): number {
+    const referenceNgramSet = new Set(referenceNgrams.map(ngram => ngram.join(' ')));
+    const candidateNgramSet = new Set(candidateNgrams.map(ngram => ngram.join(' ')));
+
+    const matchingNgrams = [...candidateNgramSet].filter(ngram => referenceNgramSet.has(ngram)).length;
+
+    return matchingNgrams / candidateNgrams.length;
 }

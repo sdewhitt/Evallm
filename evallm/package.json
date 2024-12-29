@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "groq-sdk": "^0.9.1",
+    "n-gram": "^2.0.2",
     "next": "15.1.2",
     "openai": "^4.77.0",
     "react": "^19.0.0",
