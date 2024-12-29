@@ -33,14 +33,8 @@ export default function Home() {
       if (!message.trim()) return;
 
       // Track the user prompt and expected output
-      const prompt = { role: "user" as const, content: message };
-      const expected = { role: "user" as const, content: !expectedOutput.trim() ? expectedOutput : "N/A" };
-      
-
-
-
-    //console.log("Query:", prompt);
-    //console.log("Expected Output:", expected);
+      //const prompt = { role: "user" as const, content: message };
+      //const expected = { role: "user" as const, content: !expectedOutput.trim() ? expectedOutput : "N/A" };
 
 
       const response = await fetch("/api/chat", {
@@ -50,10 +44,11 @@ export default function Home() {
         },
         body: JSON.stringify({ message, expectedOutput }),
       });
-      console.log("response:", response);
+      
       // Retrieve MULTIPLE LLM responses
 
       const data = await response.json();
+      
       
       // Display each LLM response
       //const aiMessage: Message = { role: 'ai', content: data.message };

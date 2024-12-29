@@ -22,9 +22,6 @@ export async function POST(req: Request) {
         }
 
 
-        //const placeholder = "placeholder for \'response\'";
-
-
         return new Response(JSON.stringify({ message: llmResponseList }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -55,7 +52,7 @@ async function llmResponse(userPrompt: string, model: string) {
     let response = llmResponse.choices[0].message.content;
     response = response ? response.trim() : '';
 
-    console.log('\nChat completion:\n', response);
+    console.log(`\n${model} Chat completion:\n`, response);
 
     return response;
 }
