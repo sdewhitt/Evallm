@@ -153,7 +153,7 @@ function calculateRougeN(reference: string, candidate: string, n: number): numbe
     const candidateTokens = candidate.split(' ');
 
 
-    let f1Scores = [];
+    const f1Scores = [];
     for (let i = 1; i <= n; i++) {
         const referenceNGrams = getNGrams(referenceTokens, i);
         const candidateNGrams = getNGrams(candidateTokens, i);
