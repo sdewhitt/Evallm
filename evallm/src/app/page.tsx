@@ -16,6 +16,7 @@ export default function Home() {
 
   const chartRef = useRef<HTMLCanvasElement>(null);
 
+  const defaultUser = 'Seth DeWhitt';
   
 
   // Handle user input and retrieve LLM responses + evaluations
@@ -37,7 +38,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message, expectedOutput }),
+        body: JSON.stringify({ message, expectedOutput, defaultUser }),
       });
       
       // Retrieve MULTIPLE LLM responses

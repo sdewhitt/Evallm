@@ -2,16 +2,20 @@ import Groq from 'groq-sdk';
 import stringSimilarity from 'string-similarity';
 import { nGram } from 'n-gram';
 
-import mongoose from 'mongoose'; // Bsyxb2yLPLpXd24P
-import Experiment from '@/app/models/Experiment';
+//import mongoose from 'mongoose'; // Bsyxb2yLPLpXd24P
+//import Experiment from '@/app/models/Experiment';
+import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
 
 
-mongoose.connect('mongodb://localhost:27017/evallm');
-  
-async function saveExperiment(data: any) {
-    const experiment = new Experiment(data);
-    await experiment.save();
-}
+const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+const mongoDB_client = new MongoClient(MongoDB_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
 
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY,
@@ -21,8 +25,10 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        console.log('\nQuery:', body.message);
+        console.log('\nUser:', body.defaultUser);
+        console.log('Query:', body.message);
         console.log('Expected Output:', body.expectedOutput);
+        
 
 
         // Call function to retrieve output for each LLM
@@ -38,7 +44,9 @@ export async function POST(req: Request) {
         });
 
 
-        //console.log('\n\n\n\nLLM Response List:', llmResponseList);
+        //console.log('\n\nLLM Response List:', llmResponseList);
+
+        storeData(body.defaultUser, body.message, body.expectedOutput, llmResponseList);
 
 
 
@@ -53,6 +61,60 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({ error: error }), { status: 500 });
     }
 }
+
+
+async function storeData(user: string, prompt: string, expected: string, llmResponseList: { [key: string]: any }) {
+    // Store data in MongoDB
+
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await mongoDB_client.connect();
+
+        // Send a ping to confirm a successful connection
+        await mongoDB_client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+        const database = mongoDB_client.db('Evallm');
+        const collection = database.collection('User Prompts + Evaluations');
+
+        const userDoc = await collection.findOne({name: user});
+        const curPromptData = {
+            prompt: prompt,
+            expected: expected,
+            evaluations: llmResponseList,
+        }
+        if (userDoc) { // Exiting user -> add to existing document
+
+            const update: UpdateFilter<Document> = {
+                $push: {prompts: curPromptData as any},
+                $set: {lastModified: new Date().toISOString()},
+            };
+            const result = await collection.updateOne({name: user}, update);
+
+        }
+        else { // New user -> new document
+
+            const newUserDoc = {
+                username: user,
+                prompts: [
+                    curPromptData,
+                ],
+                lastModified: new Date().toISOString(),
+            }
+            const result = await collection.insertOne(newUserDoc);
+            console.log(`New document created for ${user} with ID: ${result.insertedId}`);
+
+        }
+
+    } finally {
+        // Ensures that the client will close when you finish/error
+        await mongoDB_client.close();
+    }
+
+
+}
+
+
 
 
 async function llmResponseEvaluation(model: string, userPrompt: string, expectedOutput: string) {
@@ -112,17 +174,7 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
     };
 
 
-
-
-    const experimentData = {
-        userPrompt,
-        expectedOutput,
-        response,
-        evaluation,
-    };
-
-    await saveExperiment(experimentData);
-
+   
 
     return {"response": response, "evaluation": evaluation};
 }
