@@ -7,9 +7,9 @@ import { nGram } from 'n-gram';
 import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
 
 
-const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+//const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const mongoDB_client = new MongoClient(MongoDB_URI, {
+const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
@@ -63,61 +63,6 @@ export async function POST(req: Request) {
 }
 
 
-async function storeData(user: string, prompt: string, expected: string, llmResponseList: { [key: string]: any }) {
-    // Store data in MongoDB
-
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await mongoDB_client.connect();
-
-        // Send a ping to confirm a successful connection
-        await mongoDB_client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
-        const database = mongoDB_client.db('Evallm');
-        const collection = database.collection('User Prompts + Evaluations');
-
-        const userDoc = await collection.findOne({username: user});
-        const curPromptData = {
-            prompt: prompt,
-            expected: expected,
-            responsesAndEvaluations: llmResponseList,
-        }
-        if (userDoc) { // Exiting user -> add to existing document
-
-            const update: UpdateFilter<Document> = {
-                $push: {prompts: curPromptData as any},
-                $set: {lastModified: new Date().toISOString()},
-            };
-            const result = await collection.updateOne({username: user}, update);
-            if (result.modifiedCount > 0) {
-                console.log(`Data for "${prompt}" added to ${user}'s document.`);
-            } else {
-                console.log(`No changes were made to ${user}'s document.`);
-            }
-        }
-        else { // New user -> new document
-
-            const newUserDoc = {
-                username: user,
-                prompts: [curPromptData,],
-                lastModified: new Date().toISOString(),
-            }
-            const result = await collection.insertOne(newUserDoc);
-            console.log(`New document created for ${user} with ID: ${result.insertedId}`);
-
-        }
-
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await mongoDB_client.close();
-    }
-
-
-}
-
-
-
 
 async function llmResponseEvaluation(model: string, userPrompt: string, expectedOutput: string) {
     const systemPrompt = "You are an LLM who answers questions CONCISELY. Your response WILL be compared to an expected output that you do NOT have access to, so do not add fluff.";
@@ -152,7 +97,7 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
     // 3. Similarity, measured by cosine similarity
     // 4. BLEU score
     // 5. ROUGE score
-    // 6. Perplexity
+    // 6. Perplexity: TODO
 
     // Calculate cosine similarity
     const cosineSimilarity = stringSimilarity.compareTwoStrings(expectedOutput, response);
@@ -249,3 +194,63 @@ function calculateRougeN(reference: string, candidate: string, n: number): numbe
 
     return f1Scores;
 }
+
+
+
+
+
+
+
+async function storeData(user: string, prompt: string, expected: string, llmResponseList: { [key: string]: any }) {
+    // Store data in MongoDB
+
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await mongoDB_client.connect();
+
+        // Send a ping to confirm a successful connection
+        await mongoDB_client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+        const database = mongoDB_client.db('Evallm');
+        const collection = database.collection('User Prompts + Evaluations');
+
+        const userDoc = await collection.findOne({username: user});
+        const curPromptData = {
+            prompt: prompt,
+            expected: expected,
+            responsesAndEvaluations: llmResponseList,
+        }
+        if (userDoc) { // Exiting user -> add to existing document
+
+            const update: UpdateFilter<Document> = {
+                $push: {prompts: curPromptData as any},
+                $set: {lastModified: new Date().toISOString()},
+            };
+            const result = await collection.updateOne({username: user}, update);
+            if (result.modifiedCount > 0) {
+                console.log(`Data successfully added to ${user}'s document.`);
+            } else {
+                console.log(`No changes were made to ${user}'s document.`);
+            }
+        }
+        else { // New user -> new document
+
+            const newUserDoc = {
+                username: user,
+                prompts: [curPromptData,],
+                lastModified: new Date().toISOString(),
+            }
+            const result = await collection.insertOne(newUserDoc);
+            console.log(`New document created for ${user} with ID: ${result.insertedId}`);
+
+        }
+
+    } finally {
+        // Ensures that the client will close when you finish/error
+        await mongoDB_client.close();
+    }
+
+
+}
+
