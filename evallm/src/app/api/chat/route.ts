@@ -7,9 +7,9 @@ import { nGram } from 'n-gram';
 import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
 
 
-//const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
+const mongoDB_client = new MongoClient(MongoDB_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
