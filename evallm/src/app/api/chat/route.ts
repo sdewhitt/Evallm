@@ -14,7 +14,7 @@ const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
       strict: true,
       deprecationErrors: true,
     }
-  });
+});
 
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY,
