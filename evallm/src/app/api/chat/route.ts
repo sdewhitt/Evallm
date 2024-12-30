@@ -77,11 +77,11 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
         const database = mongoDB_client.db('Evallm');
         const collection = database.collection('User Prompts + Evaluations');
 
-        const userDoc = await collection.findOne({name: user});
+        const userDoc = await collection.findOne({username: user});
         const curPromptData = {
             prompt: prompt,
             expected: expected,
-            evaluations: llmResponseList,
+            responsesAndEvaluations: llmResponseList,
         }
         if (userDoc) { // Exiting user -> add to existing document
 
@@ -89,16 +89,18 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
                 $push: {prompts: curPromptData as any},
                 $set: {lastModified: new Date().toISOString()},
             };
-            const result = await collection.updateOne({name: user}, update);
-
+            const result = await collection.updateOne({username: user}, update);
+            if (result.modifiedCount > 0) {
+                console.log(`Data for "${prompt}" added to ${user}'s document.`);
+            } else {
+                console.log(`No changes were made to ${user}'s document.`);
+            }
         }
         else { // New user -> new document
 
             const newUserDoc = {
                 username: user,
-                prompts: [
-                    curPromptData,
-                ],
+                prompts: [curPromptData,],
                 lastModified: new Date().toISOString(),
             }
             const result = await collection.insertOne(newUserDoc);
