@@ -5,11 +5,12 @@ import { nGram } from 'n-gram';
 //import mongoose from 'mongoose'; // Bsyxb2yLPLpXd24P
 //import Experiment from '@/app/models/Experiment';
 import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
+import dotenv from 'dotenv';
+dotenv.config();
 
+//const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const MongoDB_URI = "mongodb+srv://sethjtdewhitt:Bsyxb2yLPLpXd24P@cluster0.0x73g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
-const mongoDB_client = new MongoClient(MongoDB_URI, {
+const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,

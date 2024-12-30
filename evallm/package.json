@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "groq-sdk": "^0.9.1",
     "js-rouge": "^3.0.0",
     "mongoose": "^8.9.2",
