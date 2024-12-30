@@ -57,7 +57,8 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
                 { role: "user", content: userPrompt }, // Add the new user prompt
                 ],
             model: model,
-        }
+            response_format: {"type" : "json_object"}
+        },
     );
 
 

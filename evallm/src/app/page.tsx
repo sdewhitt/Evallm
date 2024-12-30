@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Chart, ChartConfiguration, ChartData, ChartOptions } from 'chart.js';
 
 export default function Home() {
 
@@ -13,6 +14,9 @@ export default function Home() {
 
   const [error, setError] = useState<string | null>(null);
 
+  const chartRef = useRef<HTMLCanvasElement>(null);
+
+  
 
   // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
@@ -55,7 +59,55 @@ export default function Home() {
   };
 
 
-  /* ================================= Strict UI functions ================================= */
+
+
+
+  /* ========================== Bar Chart Generation ========================== *
+
+  useEffect(() => {
+    if (chartRef.current) {
+      const data = [12, 19, 3, 5, 2, 3];
+      const labels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'];
+      createBarChart(data, labels, chartRef.current);
+    }
+  }, []);
+
+  const createBarChart = (data: number[], labels: string[], canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    const chartData: ChartData<'bar'> = {
+      labels: labels,
+      datasets: [{
+        label: 'Dataset',
+        data: data,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+      }]
+    };
+
+    const chartOptions: ChartOptions<'bar'> = {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    };
+
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    };
+
+    new Chart(ctx, config);
+  }; */
+
+
+  /* ================================= UI functions ================================= */
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
