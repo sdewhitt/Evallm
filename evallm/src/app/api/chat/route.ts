@@ -1,8 +1,17 @@
 import Groq from 'groq-sdk';
 import stringSimilarity from 'string-similarity';
 import { nGram } from 'n-gram';
-import Rouge from 'rouge';
 
+import mongoose from 'mongoose'; // Bsyxb2yLPLpXd24P
+import Experiment from '@/app/models/Experiment';
+
+
+mongoose.connect('mongodb://localhost:27017/evallm');
+  
+async function saveExperiment(data: any) {
+    const experiment = new Experiment(data);
+    await experiment.save();
+}
 
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY,
@@ -56,8 +65,8 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }, // Add the new user prompt
                 ],
-            model: model,
-            response_format: {"type" : "json_object"}
+            model: model, //response_format: {"type" : "json_object"}
+            
         },
     );
 
@@ -101,6 +110,20 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
         "rouge": rougeScores,
         "perplexity": 0,
     };
+
+
+
+
+    const experimentData = {
+        userPrompt,
+        expectedOutput,
+        response,
+        evaluation,
+    };
+
+    await saveExperiment(experimentData);
+
+
     return {"response": response, "evaluation": evaluation};
 }
 

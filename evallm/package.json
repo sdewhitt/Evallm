@@ -11,6 +11,7 @@
   "dependencies": {
     "groq-sdk": "^0.9.1",
     "js-rouge": "^3.0.0",
+    "mongoose": "^8.9.2",
     "n-gram": "^2.0.2",
     "next": "15.1.2",
     "openai": "^4.77.0",
