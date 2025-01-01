@@ -1,36 +1,33 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-//import { Chart, ChartConfiguration, ChartData, ChartOptions } from 'chart.js';
+import { getServerSession } from "next-auth";
+import { authConfig } from "./api/auth/auth";
+import { set } from "mongoose";
+
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 
 export default function Home() {
 
   const [message, setMessage] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
   
-  //const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  
-  //const chartRef = useRef<HTMLCanvasElement>(null);
-
-  const { data: session } = useSession();
+  //const { data: session } = useSession();
+  const [isSession, setIsSession] = useState(false);
   const defaultUser = 'Seth DeWhitt';
   
-
-  if (!session) {
-    return (
-      <div>
-        <h1>Welcome to Evallm!</h1>
-        <button onClick={() => signIn("google")}>Sign in with Google</button>
-      </div>
-    );
-  }
-
   // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
     // Clear the input field
@@ -73,52 +70,57 @@ export default function Home() {
 
 
 
+  /* ================================= Authentication ================================= */
 
 
-  /* ========================== Bar Chart Generation ========================== *
+  
 
   useEffect(() => {
-    if (chartRef.current) {
-      const data = [12, 19, 3, 5, 2, 3];
-      const labels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'];
-      createBarChart(data, labels, chartRef.current);
-    }
-  }, []);
-
-  const createBarChart = (data: number[], labels: string[], canvas: HTMLCanvasElement) => {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Failed to get canvas context');
-    }
-
-    const chartData: ChartData<'bar'> = {
-      labels: labels,
-      datasets: [{
-        label: 'Dataset',
-        data: data,
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1
-      }]
+    const loadGoogleScript = () => {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.body.appendChild(script);
     };
 
-    const chartOptions: ChartOptions<'bar'> = {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
+    const initializeGoogleSignIn = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+          callback: handleCredentialResponse,
+        });
+        window.google.accounts.id.renderButton(
+          document.getElementById("googleSignInDiv")!,
+          {
+            theme: "outline",
+            size: "large",
+          }
+        );
+        window.google.accounts.id.prompt(); // Automatically shows the sign-in prompt
       }
     };
 
-    const config: ChartConfiguration<'bar'> = {
-      type: 'bar',
-      data: chartData,
-      options: chartOptions
+    const handleCredentialResponse = (response: any) => {
+      console.log("Encoded JWT ID token: ", response.credential);
+      // Handle the token as needed, such as sending it to your server
+      setIsSession(true);
+      setError(null); // Clear any previous errors
     };
 
-    new Chart(ctx, config);
-  }; */
+    loadGoogleScript();
+  }, [process.env.GOOGLE_CLIENT_ID as string]);
 
+/*
+  const handleSignIn = async () => {
+    try {
+      const result = await signIn("google");
+
+    } catch (error) {
+      setError(`Error during sign-in: ${error instanceof Error ? error.message : "unknown"}`);
+    }
+  };*/
 
   /* ================================= UI functions ================================= */
 
@@ -216,7 +218,26 @@ export default function Home() {
 
       </div>
 
+
+
+      {!isSession &&
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+          <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-emerald-600">Welcome to Evallm!</h2>
+            <div id="googleSignInDiv" className="mt-4"></div>
+          </div>
+        </div>  
+      }
+
       
     </div>
   );
 }
+
+//<div id="googleSignInDiv" className="mt-4"></div>
+/*<button
+              onClick={() => handleSignIn()}
+              className="mt-4 px-4 py-2 bg-emerald-600 text-stone-900 rounded-xl hover:bg-emerald-800 transition-all"
+            >
+              Sign in with Google
+            </button>*/
