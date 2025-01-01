@@ -1,23 +1,35 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Chart, ChartConfiguration, ChartData, ChartOptions } from 'chart.js';
+import { signIn, signOut, useSession } from "next-auth/react";
+//import { Chart, ChartConfiguration, ChartData, ChartOptions } from 'chart.js';
 
 export default function Home() {
 
   const [message, setMessage] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
   
-  const [inputText, setInputText] = useState("");
+  //const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  const chartRef = useRef<HTMLCanvasElement>(null);
+  
+  //const chartRef = useRef<HTMLCanvasElement>(null);
 
+  const { data: session } = useSession();
   const defaultUser = 'Seth DeWhitt';
   
+
+  if (!session) {
+    return (
+      <div>
+        <h1>Welcome to Evallm!</h1>
+        <button onClick={() => signIn("google")}>Sign in with Google</button>
+      </div>
+    );
+  }
 
   // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
@@ -125,7 +137,7 @@ export default function Home() {
         </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
-          <button>Login</button>
+          <button  onClick={() => signOut()} >Sign Out</button>
         </div>
 
       </div>
