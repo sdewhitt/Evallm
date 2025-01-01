@@ -24,9 +24,9 @@ export default function Home() {
 
   const [error, setError] = useState<string | null>(null);
 
-  //const { data: session } = useSession();
-  const [isSession, setIsSession] = useState(false);
-  const defaultUser = 'Seth DeWhitt';
+  const { data: session, status } = useSession();
+  //const [isSession, setIsSession] = useState(false);
+  let user = 'DEFAULT_USER';
   
   // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
@@ -47,7 +47,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message, expectedOutput, defaultUser }),
+        body: JSON.stringify({ message, expectedOutput, user }),
       });
       
       // Retrieve MULTIPLE LLM responses
@@ -72,45 +72,6 @@ export default function Home() {
 
   /* ================================= Authentication ================================= */
 
-
-  
-
-  useEffect(() => {
-    const loadGoogleScript = () => {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initializeGoogleSignIn;
-      document.body.appendChild(script);
-    };
-
-    const initializeGoogleSignIn = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
-          callback: handleCredentialResponse,
-        });
-        window.google.accounts.id.renderButton(
-          document.getElementById("googleSignInDiv")!,
-          {
-            theme: "outline",
-            size: "large",
-          }
-        );
-        window.google.accounts.id.prompt(); // Automatically shows the sign-in prompt
-      }
-    };
-
-    const handleCredentialResponse = (response: any) => {
-      console.log("Encoded JWT ID token: ", response.credential);
-      // Handle the token as needed, such as sending it to your server
-      setIsSession(true);
-      setError(null); // Clear any previous errors
-    };
-
-    loadGoogleScript();
-  }, [process.env.GOOGLE_CLIENT_ID as string]);
 
 /*
   const handleSignIn = async () => {
@@ -220,7 +181,7 @@ export default function Home() {
 
 
 
-      {!isSession &&
+      {!session &&
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
           <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold text-emerald-600">Welcome to Evallm!</h2>
