@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        console.log('\nUser:', body.user);
+        console.log('\nUser:', body.email);
         console.log('Query:', body.message);
         console.log('Expected Output:', body.expectedOutput);
         
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
         //console.log('\n\nLLM Response List:', llmResponseList);
 
-        storeData(body.defaultUser, body.message, body.expectedOutput, llmResponseList);
+        storeData(body.email, body.message, body.expectedOutput, llmResponseList);
 
 
 

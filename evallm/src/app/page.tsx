@@ -21,8 +21,44 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  let user = 'DEFAULT_USER';
+  //let user = 'DEFAULT_USER';
   
+
+
+/* ================================= Authentication ================================= */
+
+
+const handleLoginSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoginLoading(true);
+  try {      
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) throw data.error; // If there is an error or incorrect password
+
+    setIsLoggedIn(true);
+    //user = email.toString();
+
+
+    
+  } catch (error) {
+    setLoginError(`Please enter a valid email/password.`);
+  } finally {
+    setIsLoginLoading(false);
+  }
+};
+
+
+
+
   // Handle user input and retrieve LLM responses + evaluations
   const handleSubmit = async () => {
     // Clear the input field
@@ -42,7 +78,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message, expectedOutput, user }),
+        body: JSON.stringify({ message, expectedOutput, email }),
       });
       
       // Retrieve MULTIPLE LLM responses
@@ -65,37 +101,7 @@ export default function Home() {
 
 
 
-  /* ================================= Authentication ================================= */
-
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoginLoading(true);
-    try {      
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) throw data.error; // If there is an error or incorrect password
-
-      setIsLoggedIn(true);
-      user = email.toString();
-
-
-      
-    } catch (error) {
-      setLoginError(`Please enter a valid email/password.`);
-    } finally {
-      setIsLoginLoading(false);
-    }
-  };
-
+  
 
 
   /* ================================= UI functions ================================= */
@@ -233,7 +239,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={isLoginLoading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isLoginLoading ? "Logging in..." : "Login"}
                   </button>
                 </div>
