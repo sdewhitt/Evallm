@@ -221,7 +221,7 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
             expected: expected,
             responsesAndEvaluations: llmResponseList,
         }
-        if (userDoc) { // Exiting user -> add to existing document
+        if (userDoc) { // Existing user -> add to existing document
 
             const update: UpdateFilter<Document> = {
                 $push: {prompts: curPromptData as any},

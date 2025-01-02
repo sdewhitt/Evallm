@@ -1,4 +1,4 @@
-import CredentialsProvider from "next-auth/providers/credentials";
+/*import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { NextAuthOptions, User, getServerSession } from "next-auth";
@@ -60,4 +60,4 @@ export const authConfig: NextAuthOptions = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         }),
     ]
-}
+}*/

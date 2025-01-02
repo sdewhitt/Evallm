@@ -1,16 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { getServerSession } from "next-auth";
-import { authConfig } from "./api/auth/auth";
+
 import { set } from "mongoose";
-
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 
 
 export default function Home() {
@@ -24,8 +15,11 @@ export default function Home() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const { data: session, status } = useSession();
-  //const [isSession, setIsSession] = useState(false);
+
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   let user = 'DEFAULT_USER';
   
   // Handle user input and retrieve LLM responses + evaluations
@@ -73,15 +67,35 @@ export default function Home() {
   /* ================================= Authentication ================================= */
 
 
-/*
-  const handleSignIn = async () => {
-    try {
-      const result = await signIn("google");
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {      
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
+      const data = await response.json();
+
+      if (!data.success) throw data.error; // If there is an error or incorrect password
+
+      setIsLoggedIn(true);
+      user = email.toString();
+
+
+      
     } catch (error) {
-      setError(`Error during sign-in: ${error instanceof Error ? error.message : "unknown"}`);
+      setLoginError(`Please enter a valid email/password.`);
+    } finally {
+      setIsLoading(false);
     }
-  };*/
+  };
+
+
 
   /* ================================= UI functions ================================= */
 
@@ -100,7 +114,7 @@ export default function Home() {
         </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
-          <button  onClick={() => signOut()} >Sign Out</button>
+          <button >Sign Out</button>
         </div>
 
       </div>
@@ -181,14 +195,67 @@ export default function Home() {
 
 
 
-      {!session &&
+      {!isLoggedIn &&
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
           <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold text-emerald-600">Welcome to Evallm!</h2>
-            <div id="googleSignInDiv" className="mt-4"></div>
+
+            {/* LOGIN FORM */}
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-emerald-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-emerald-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                    Login
+                  </button>
+                </div>
+              </form>
           </div>
         </div>  
       }
+
+      {/* Login Error Box */}
+      {loginError && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-stone-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-red-600">Error</h2>
+            <p className="text-s text-red-600">{loginError}</p>
+            
+            <button
+              onClick={() => setLoginError(null)}
+              className="mt-4 px-4 py-2 bg-red-600 text-stone-900 rounded-xl hover:bg-red-800 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       
     </div>
