@@ -2,6 +2,24 @@
 import React, { useState, useEffect } from "react";
 import './globals.css';
 
+interface Experiment {
+  prompt: string;
+  expected: string;
+  responsesAndEvaluations: {
+    [model: string]: {
+      response: string;
+      evaluation: {
+        responseTime: number;
+        exactMatch: boolean;
+        similarity: number;
+        bleu: number;
+        rouge: number[];
+        perplexity: number;
+      };
+    };
+  };
+}
+
 export default function Home() {
 
   const [message, setMessage] = useState("");
@@ -19,9 +37,11 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+
   
-  const [experimentArray, setExperimentArray] = useState<{ prompt: string, expected: string, responsesAndEvaluations: Record<string, object> }[]>([]);
-  const [experiment, setExperiment] = useState<{ prompt: string, expected: string, responsesAndEvaluations: Record<string, object> } | null>(null);
+  const [experimentArray, setExperimentArray] = useState<Experiment[]>([]);
+  const [experiment, setExperiment] = useState<Experiment | null>(null);
 
 
   /* ================================= Authentication ================================= */
@@ -143,12 +163,12 @@ export default function Home() {
         <div className="flex-1 pt-20 pb-16">
           <div className="p-4">
             <h2 className="text-2xl font-semibold text-stone-100">User Prompt</h2>
-            <p className="text-stone-100">{experiment?.prompt}</p>
+            <p className="text-stone-100">{experiment.prompt}</p>
           </div>
 
           <div className="p-4">
             <h2 className="text-2xl font-semibold text-stone-100">Expected Output</h2>
-            <p className="text-stone-100">{experiment?.expected}</p>
+            <p className="text-stone-100">{experiment.expected}</p>
           </div>
 
           <div className="p-4">
@@ -156,7 +176,7 @@ export default function Home() {
             {experiment && Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
               <div key={model} className="border border-stone-900 p-4 rounded-xl mb-4">
                 <h3 className="text-xl font-semibold text-stone-100">{model}</h3>
-                <pre className="text-stone-100">{JSON.stringify(data, null, 2)}</pre>
+                <pre className="text-stone-100">{data.response /*JSON.stringify(data, null, 2)*/}</pre>
               </div>
             ))}
           </div>
