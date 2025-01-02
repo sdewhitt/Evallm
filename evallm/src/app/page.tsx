@@ -17,6 +17,7 @@ export default function Home() {
 
 
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -69,7 +70,7 @@ export default function Home() {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoginLoading(true);
     try {      
       const response = await fetch('/api/auth', {
         method: 'POST',
@@ -91,7 +92,7 @@ export default function Home() {
     } catch (error) {
       setLoginError(`Please enter a valid email/password.`);
     } finally {
-      setIsLoading(false);
+      setIsLoginLoading(false);
     }
   };
 
@@ -231,8 +232,9 @@ export default function Home() {
                 <div>
                   <button
                     type="submit"
+                    disabled={isLoginLoading}
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                    Login
+                    {isLoginLoading ? "Logging in..." : "Login"}
                   </button>
                 </div>
               </form>
