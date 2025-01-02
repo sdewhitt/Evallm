@@ -1,11 +1,5 @@
-import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
-const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-});
+import { UpdateFilter, Document } from 'mongodb';
+import client from '../../mongo';
 
 
 export async function POST(req: Request) {
@@ -16,9 +10,9 @@ export async function POST(req: Request) {
         console.log('\nEmail:', body.email);
         console.log('Password:', body.password);
 
-        await mongoDB_client.connect();
-        await mongoDB_client.db("admin").command({ ping: 1 });
-        const database = mongoDB_client.db('Evallm');
+        await client.connect();
+        await client.db("admin").command({ ping: 1 });
+        const database = client.db('Evallm');
         const collection = database.collection('Users');
 
         const userDoc = await collection.findOne({email: body.email});
@@ -46,7 +40,7 @@ export async function POST(req: Request) {
             const promptCollection = database.collection('User Prompts + Evaluations');
             const userPromptDoc = await promptCollection.findOne({username: body.email});
 
-            await mongoDB_client.close();
+            await client.close();
             return new Response(JSON.stringify(
                 {   
                     success: true, 
@@ -69,7 +63,7 @@ export async function POST(req: Request) {
             const result = await collection.insertOne(newUserDoc);
             console.log(`New registration created for ${body.email} with ID: ${result.insertedId}`);
 
-            await mongoDB_client.close();
+            await client.close();
             return new Response(JSON.stringify({ success: true, prompts: [] }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -77,7 +71,7 @@ export async function POST(req: Request) {
         }
     } catch (error) {
         //console.error('Error in POST request:', error);
-        await mongoDB_client.close();
+        await client.close();
         return new Response(JSON.stringify({ error: error as Error, success: false }), { status: 500 });
     } 
 }

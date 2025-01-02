@@ -26,8 +26,6 @@ export default function Home() {
 
 
 /* ================================= Authentication ================================= */
-
-
 const handleLoginSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoginLoading(true);
@@ -47,8 +45,6 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
     setIsLoggedIn(true);
     //user = email.toString();
 
-
-    
   } catch (error) {
     setLoginError(`Please enter a valid email/password.`);
   } finally {

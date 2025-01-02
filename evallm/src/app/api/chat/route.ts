@@ -4,17 +4,8 @@ import { nGram } from 'n-gram';
 
 //import mongoose from 'mongoose'; // Bsyxb2yLPLpXd24P
 //import Experiment from '@/app/models/Experiment';
-import { MongoClient, ServerApiVersion, UpdateFilter, Document } from 'mongodb';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const mongoDB_client = new MongoClient(process.env.MONGODB_URI as string, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-});
+import { UpdateFilter, Document } from 'mongodb';
+import client from '../../mongo';
 
 const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY,
@@ -206,13 +197,13 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
 
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await mongoDB_client.connect();
+        await client.connect();
 
         // Send a ping to confirm a successful connection
-        await mongoDB_client.db("admin").command({ ping: 1 });
+        await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-        const database = mongoDB_client.db('Evallm');
+        const database = client.db('Evallm');
         const collection = database.collection('User Prompts + Evaluations');
 
         const userDoc = await collection.findOne({username: user});
@@ -221,6 +212,9 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
             expected: expected,
             responsesAndEvaluations: llmResponseList,
         }
+        
+
+        console.log("checking for user docs for user: ", user);
         if (userDoc) { // Existing user -> add to existing document
 
             const update: UpdateFilter<Document> = {
@@ -246,9 +240,11 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
 
         }
 
+    } catch (error) {
+        console.error('Error in storing data:', error);
     } finally {
         // Ensures that the client will close when you finish/error
-        await mongoDB_client.close();
+        await client.close();
     }
 
 
