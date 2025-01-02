@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-
-import { set } from "mongoose";
-
+import './globals.css';
 
 export default function Home() {
 
@@ -21,36 +19,47 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  //let user = 'DEFAULT_USER';
   
+  const [experimentArray, setExperimentArray] = useState<{ prompt: string, expected: string, responsesAndEvaluations: Record<string, object> }[]>([]);
 
 
-/* ================================= Authentication ================================= */
-const handleLoginSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoginLoading(true);
-  try {      
-    const response = await fetch('/api/auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
 
-    const data = await response.json();
+  /* ================================= Authentication ================================= */
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoginLoading(true);
+    try {      
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!data.success) throw data.error; // If there is an error or incorrect password
+      const data = await response.json();
 
-    setIsLoggedIn(true);
-    //user = email.toString();
+      if (!data.success) throw data.error; // If there is an error or incorrect password
 
-  } catch (error) {
-    setLoginError(`Please enter a valid email/password.`);
-  } finally {
-    setIsLoginLoading(false);
+      setIsLoggedIn(true);
+      //user = email.toString();
+
+      // Set the user history
+      setExperimentArray(data.prompts);
+
+
+    } catch (error) {
+      setLoginError(`Please enter a valid email/password.`);
+    } finally {
+      setIsLoginLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setIsLoggedIn(false);
+    setEmail("");
+    setPassword("");
   }
-};
 
 
 
@@ -96,10 +105,6 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
   };
 
 
-
-  
-
-
   /* ================================= UI functions ================================= */
 
   const toggleSidebar = () => {
@@ -112,12 +117,12 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
       <div className="flex-1 flex flex-col justify-between p-8">
         <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
 
-        <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
-          <button onClick={toggleSidebar}>Prompts</button>
+        <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl ">
+          <button onClick={toggleSidebar}>Prompt Dashboards</button>
         </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
-          <button >Sign Out</button>
+          <button onClick={handleSignOut}>Sign Out</button>
         </div>
 
       </div>
@@ -126,15 +131,23 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
       {isSidebarVisible && (
         <div>
 
-
-          <div className="fixed inset-y-0 left-0 w-64 bg-stone-700 p-4 shadow-lg">
           {/* Display Prompts:*/}
+          <div className="fixed inset-y-0 left-0 w-64 bg-emerald-950 p-4 shadow-lg border border-stone-900">
+          
+            <div className="overflow-y-auto flex-1 custom-scrollbar">
+              {experimentArray.map((experiment) => (
+                <div key={experiment.prompt} className="p-2 bg-emerald-900 rounded-xl mb-2">
+                  <h2 className="text-lg font-semibold text-white">{experiment.prompt}</h2>
+                  <p className="text-sm text-stone-100">{experiment.expected}</p>
+                </div>
+              ))}
+            </div>
+
 
           </div>
 
-          <div className = "fixed top-0 left-0 w-64 bg-emerald-900 p-4">
-            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>Prompts</button>
-            <p className="text-white">Click a below prompt to view its responses + evaluations.</p>
+          <div className = "fixed top-0 left-0 w-64 bg-emerald-900 p-4 border border-stone-900">
+            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>Prompt Dashboards</button>
           </div>
         </div>
 
@@ -199,47 +212,47 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
 
 
       {!isLoggedIn &&
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
           <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold text-emerald-600">Welcome to Evallm!</h2>
+            <h2 className="text-xl font-semibold text-emerald-500">Welcome to Evallm!</h2>
 
             {/* LOGIN FORM */}
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-emerald-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-emerald-700">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <button
-                    type="submit"
-                    disabled={isLoginLoading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isLoginLoading ? "Logging in..." : "Login"}
-                  </button>
-                </div>
-              </form>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div>
+                
+              </div>
+              <div>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email..."
+                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                  required
+                />
+              </div>
+              <div>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password..."
+                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                  required
+                />
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoginLoading}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-800 hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoginLoading ? "Logging in..." : "Login / Sign Up"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>  
       }
