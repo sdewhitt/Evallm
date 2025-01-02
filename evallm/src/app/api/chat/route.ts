@@ -235,7 +235,7 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
         console.log('Error in storing data:', error);
     } finally {
         // Ensures that the client will close when you finish/error
-        await client.close();
+        //await client.close();
     }
 
 

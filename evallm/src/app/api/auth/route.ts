@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         }
     } catch (error) {
         //console.error('Error in POST request:', error);
-        await client.close();
+        //await client.close();
         return new Response(JSON.stringify({ error: error as Error, success: false }), { status: 500 });
     } 
 }
