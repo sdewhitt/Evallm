@@ -115,16 +115,20 @@ export default function Home() {
 
   const switchDisplayPrompt = (index: number) => {
     setExperiment(experimentArray[index]);
+    toggleSidebar();
   };
 
   return (
     <div className="min-h-screen flex bg-stone-800">
       
-      <div className="flex-1 flex flex-col justify-between p-8">
-        <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
+      <div className="flex-1 flex flex-col justify-between">
+        <div className="absolute inset-0 bg-stone-900  p-6 h-20 border-b border-gray-950">
+          <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>  
+        </div> 
+        
 
         <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl ">
-          <button onClick={toggleSidebar}>Prompt Dashboards</button>
+          <button onClick={toggleSidebar}>Prompt Analytics</button>
         </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
@@ -135,11 +139,11 @@ export default function Home() {
 
       {/* Sidebar */}
       {isSidebarVisible && (
-        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border border-stone-900">
+        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border-b border-stone-900">
 
           <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
             <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
-              Prompt Dashboards
+              Prompt Analytics
             </button>
           </div>
 
@@ -287,11 +291,3 @@ export default function Home() {
     </div>
   );
 }
-
-//<div id="googleSignInDiv" className="mt-4"></div>
-/*<button
-              onClick={() => handleSignIn()}
-              className="mt-4 px-4 py-2 bg-emerald-600 text-stone-900 rounded-xl hover:bg-emerald-800 transition-all"
-            >
-              Sign in with Google
-            </button>*/
