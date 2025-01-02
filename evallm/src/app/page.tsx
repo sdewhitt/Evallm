@@ -121,7 +121,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex bg-stone-800">
       
-      <div className="flex-1 flex flex-col justify-between">
+      {/* Top Bar */}
+      <div className="fixed top-0 w-full justify-between">
         <div className="absolute inset-0 bg-stone-900  p-6 h-20 border-b border-gray-950">
           <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>  
         </div> 
@@ -134,8 +135,34 @@ export default function Home() {
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
           <button onClick={handleSignOut}>Sign Out</button>
         </div>
-
       </div>
+
+
+      {/* Main Content */}
+      {experiment && (
+        <div className="flex-1 pt-20 pb-16">
+          <div className="p-4">
+            <h2 className="text-2xl font-semibold text-stone-100">User Prompt</h2>
+            <p className="text-stone-100">{experiment?.prompt}</p>
+          </div>
+
+          <div className="p-4">
+            <h2 className="text-2xl font-semibold text-stone-100">Expected Output</h2>
+            <p className="text-stone-100">{experiment?.expected}</p>
+          </div>
+
+          <div className="p-4">
+            <h2 className="text-2xl font-semibold text-stone-100">Responses and Evaluations</h2>
+            {experiment && Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
+              <div key={model} className="border border-stone-900 p-4 rounded-xl mb-4">
+                <h3 className="text-xl font-semibold text-stone-100">{model}</h3>
+                <pre className="text-stone-100">{JSON.stringify(data, null, 2)}</pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
 
       {/* Sidebar */}
       {isSidebarVisible && (
