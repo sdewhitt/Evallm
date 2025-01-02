@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
         //console.log('\n\nLLM Response List:', llmResponseList);
 
-        storeData(body.email, body.message, body.expectedOutput, llmResponseList);
+        await storeData(body.email, body.message, body.expectedOutput, llmResponseList);
 
 
 
@@ -117,11 +117,6 @@ async function llmResponseEvaluation(model: string, userPrompt: string, expected
     return {"response": response, "evaluation": evaluation};
 }
 
-
-
-
-
-
 // Function to calculate BLEU score
 function calculateBleu(reference: string, candidate: string): number {
     const referenceTokens = reference.split(' ');
@@ -187,14 +182,10 @@ function calculateRougeN(reference: string, candidate: string, n: number): numbe
 }
 
 
-
-
-
-
-
 async function storeData(user: string, prompt: string, expected: string, llmResponseList: { [key: string]: any }) {
     // Store data in MongoDB
 
+    console.log("Awaiting connection to MongoDB...");
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
@@ -241,7 +232,7 @@ async function storeData(user: string, prompt: string, expected: string, llmResp
         }
 
     } catch (error) {
-        console.error('Error in storing data:', error);
+        console.log('Error in storing data:', error);
     } finally {
         // Ensures that the client will close when you finish/error
         await client.close();
