@@ -39,9 +39,13 @@ export async function POST(req: Request) {
 
         await storeData(body.email, body.message, body.expectedOutput, llmResponseList);
 
+        const curPromptData = {
+            prompt: body.message,
+            expected: body.expectedOutput,
+            responsesAndEvaluations: llmResponseList,
+        }
 
-
-        return new Response(JSON.stringify({ results: llmResponseList }), {
+        return new Response(JSON.stringify({ experiment: curPromptData }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });

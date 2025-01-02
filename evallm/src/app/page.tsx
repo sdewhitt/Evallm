@@ -21,7 +21,7 @@ export default function Home() {
   const [password, setPassword] = useState<string>("");
   
   const [experimentArray, setExperimentArray] = useState<{ prompt: string, expected: string, responsesAndEvaluations: Record<string, object> }[]>([]);
-
+  const [experiment, setExperiment] = useState<{ prompt: string, expected: string, responsesAndEvaluations: Record<string, object> } | null>(null);
 
 
   /* ================================= Authentication ================================= */
@@ -45,7 +45,7 @@ export default function Home() {
       //user = email.toString();
 
       // Set the user history
-      setExperimentArray(data.prompts);
+      setExperimentArray(data.prompts.reverse());
 
 
     } catch (error) {
@@ -90,10 +90,12 @@ export default function Home() {
 
       const data = await response.json();
       
+      // Update Experiment Array:
       
+      setExperimentArray(prevArray => [data.experiment, ...prevArray]);
+      setExperiment(experimentArray[0]);
       // Display each LLM response
-      //const aiMessage: Message = { role: 'ai', content: data.message };
-      //setMessages((prev) => [...prev, aiMessage]);
+
 
 
     } catch (error) {
@@ -109,6 +111,10 @@ export default function Home() {
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
+  };
+
+  const switchDisplayPrompt = (index: number) => {
+    setExperiment(experimentArray[index]);
   };
 
   return (
@@ -129,26 +135,29 @@ export default function Home() {
 
       {/* Sidebar */}
       {isSidebarVisible && (
-        <div>
+        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border border-stone-900">
+
+          <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
+            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
+              Prompt Dashboards
+            </button>
+          </div>
 
           {/* Display Prompts:*/}
-          <div className="fixed inset-y-0 left-0 w-64 bg-emerald-950 p-4 shadow-lg border border-stone-900">
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
           
-            <div className="overflow-y-auto flex-1 custom-scrollbar">
-              {experimentArray.map((experiment) => (
-                <div key={experiment.prompt} className="p-2 bg-emerald-900 rounded-xl mb-2">
-                  <h2 className="text-lg font-semibold text-white">{experiment.prompt}</h2>
-                  <p className="text-sm text-stone-100">{experiment.expected}</p>
-                </div>
+              {experimentArray.map((experiment, index) => (
+                <button 
+                  key={experiment.prompt} 
+                  className="text-left p-2 bg-emerald-800 rounded-xl mb-2 hover:bg-emerald-900 transition-all"
+                  onClick={() => switchDisplayPrompt(index)}>
+                  <h2 className="text-lg text-stone-100">{experiment.prompt}</h2>
+                </button>
               ))}
-            </div>
-
 
           </div>
 
-          <div className = "fixed top-0 left-0 w-64 bg-emerald-900 p-4 border border-stone-900">
-            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>Prompt Dashboards</button>
-          </div>
+
         </div>
 
       )}
