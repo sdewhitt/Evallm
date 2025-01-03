@@ -28,6 +28,7 @@ export default function Home() {
   const [expectedOutput, setExpectedOutput] = useState("");
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
@@ -116,8 +117,8 @@ export default function Home() {
       // Update Experiment Array:
       
       setExperimentArray(prevArray => [data.experiment, ...prevArray]);
-      setExperiment(experimentArray[0]);
-
+      setExperiment(null);
+      setExperiment(data.experiment);
 
 
 
@@ -131,6 +132,17 @@ export default function Home() {
 
 
   /* ================================= UI functions ================================= */
+
+  const clearExperiment = async () => {
+    setIsClearing(true);
+    try {
+      setExperiment(null);
+    } catch (error) {
+      setError(`${error instanceof Error ? error.message : "unknown"}`);
+    } finally {
+      setIsClearing(false);
+    }
+  }
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -268,6 +280,15 @@ export default function Home() {
         {/* Input Area */}
         <div className="max-w-3xl mx-auto">
           <div className="flex gap-3 items-center">
+
+            <button
+              onClick={clearExperiment}
+              disabled={isClearing}
+              className="bg-rose-800 text-white px-5 py-3 rounded-xl hover:bg-rose-900 transition-all disabled:bg-rose-950 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isClearing ? "Clearing..." : "Clear Output"}
+            </button>
+
             <input
               type="text"
               value={message}
