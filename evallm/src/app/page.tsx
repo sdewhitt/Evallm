@@ -180,31 +180,33 @@ export default function Home() {
           
           <div className="flex p-4  justify-center items-center">
             <div className="flex-1">
-              <h2 className="text-2xl font-semibold text-stone-100 text-center">User Prompt</h2>
+              <h2 className="text-2xl font-semibold text-emerald-500 text-center">User Prompt</h2>
               <p className="text-stone-100 text-center">{experiment.prompt}</p>
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-semibold text-stone-100 text-center">Expected Output</h2>
+              <h2 className="text-2xl font-semibold text-emerald-500 text-center">Expected Output</h2>
               <p className="text-stone-100 text-center">{experiment.expected}</p>
             </div>
           </div>
 
           <div className="p-4 flex flex-col items-center justify-center">
-            <h2 className="text-2xl font-semibold text-stone-100">Responses and Evaluations</h2>
-            {experiment && Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
-              <div key={model} className="flex border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 max-w-md w-full overflow-x-auto">
-                <div className="flex-1 p-2">
-                  <h3 className="text-xl font-semibold text-stone-100">{model}</h3>
-                  <pre className="text-stone-100 whitespace-pre-wrap">{data.response /*JSON.stringify(data, null, 2)*/}</pre>
-                </div>
+            <h2 className="text-3xl font-semibold text-emerald-200 p-4">Responses and Evaluations</h2>
+            <div className="flex overflow-x-auto space-x-4">
+              {Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
+                <div key={model} className="flex-none border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-96 overflow-x-auto">
+                  <div className="flex-1 p-2">
+                    <h3 className="text-xl font-semibold text-emerald-500">{model}</h3>
+                    <pre className="text-stone-100 whitespace-pre-wrap">{data.response /*JSON.stringify(data, null, 2)*/}</pre>
+                  </div>
 
-                <div className="flex-1 p-2">
-                  <h3 className="text-xl font-semibold text-stone-100">Evaluation Metrics</h3>
-                  <pre className="text-stone-100 whitespace-pre-wrap">{formatEvaluation(data.evaluation)}</pre>
-                </div>
+                  <div className="flex-1 p-2">
+                    <h3 className="text-xl font-semibold text-emerald-500">Evaluation Metrics</h3>
+                    <pre className="text-stone-100 whitespace-pre-wrap">{formatEvaluation(data.evaluation)}</pre>
+                  </div>
 
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
 
 
