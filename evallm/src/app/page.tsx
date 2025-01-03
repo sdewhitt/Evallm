@@ -20,7 +20,7 @@ interface Experiment {
   };
 }
 
-
+const models = ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
 
 export default function Home() {
 
@@ -45,6 +45,8 @@ export default function Home() {
   
   const [experimentArray, setExperimentArray] = useState<Experiment[]>([]);
   const [experiment, setExperiment] = useState<Experiment | null>(null);
+
+  const [isViewingLLMStats, setIsViewingLLMStats] = useState(false);
 
 
   /* ================================= Authentication ================================= */
@@ -118,9 +120,11 @@ export default function Home() {
       
       setExperimentArray(prevArray => [data.experiment, ...prevArray]);
       setExperiment(null);
+      setIsViewingLLMStats(false);
       setExperiment(data.experiment);
 
 
+      // Calculate/Update the LLM Statistics
 
     } catch (error) {
       //console.error("Error:", error instanceof Error ? error.message : "unknown");
@@ -130,6 +134,20 @@ export default function Home() {
     }
   };
 
+  const fetchLLMStats = async () => {
+    try {
+      
+
+    } catch (error) {
+      setError(`${error instanceof Error ? error.message : "unknown"}`);
+    }
+  }
+
+  const calculateLLMStats = async (LLM: string) => {
+
+    
+
+  }
 
   /* ================================= UI functions ================================= */
 
@@ -151,6 +169,7 @@ export default function Home() {
   const switchDisplayPrompt = (index: number) => {
     setExperiment(experimentArray[index]);
     toggleSidebar();
+    setIsViewingLLMStats(false);
   };
 
   const formatEvaluation = (evaluation: Experiment["responsesAndEvaluations"]["model"]["evaluation"]) => {
@@ -164,7 +183,12 @@ export default function Home() {
 
     return responseTime + similarityPercent + bleuScore + rougeScore;
   }
-  //<h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
+
+  const toggleViewLLMStats = () => {
+    setIsViewingLLMStats(!isViewingLLMStats);
+  };
+  
+
   return (
     <div className="min-h-screen flex bg-stone-700">
       
@@ -178,6 +202,9 @@ export default function Home() {
         <div className="fixed top-3 left-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl ">
           <button onClick={toggleSidebar}>Prompt Analytics</button>
         </div>
+        <div className="fixed top-3 left-60 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl ">
+          <button onClick={toggleViewLLMStats}>LLM Statistics</button>
+        </div>
 
         <div className="fixed top-3 right-10 space-y-4 bg-emerald-700 hover:bg-emerald-800 transition-all p-3 rounded-xl">
           <button onClick={handleSignOut}>Sign Out</button>
@@ -185,7 +212,7 @@ export default function Home() {
       </div>
 
 
-      {/* Main Content */}
+      {/* Responses & Evaluations */}
       {experiment && (
         <div className="flex-1 pt-20 pb-16 ">
 
@@ -202,7 +229,7 @@ export default function Home() {
           </div>
 
           <div className="p-4 flex flex-col items-center justify-center">
-            <h2 className="text-3xl font-semibold text-emerald-200 p-4">Responses and Evaluations</h2>
+            <h2 className="text-3xl font-semibold text-emerald-200 p-4">Responses & Evaluations</h2>
             <div className="flex overflow-x-auto space-x-4">
               {Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
                 <div key={model} className="flex-none border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-96 overflow-x-auto">
@@ -225,6 +252,23 @@ export default function Home() {
           
         </div>
       )}
+      
+      {/* View LLM Stats */}
+      {isViewingLLMStats && (
+      <div className="flex-1 pt-20 pb-16 ">
+
+        <div className="p-4 flex flex-col items-center justify-center">
+          <h2 className="text-3xl font-semibold text-emerald-200 p-4">LLM Statistics</h2>
+          <div className="flex overflow-x-auto space-x-4">
+            
+          </div>
+        </div>
+
+
+    
+      </div>
+      )}
+
       
 
 
@@ -324,15 +368,12 @@ export default function Home() {
       )}
 
       {!isLoggedIn &&
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-85">
           <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold text-emerald-500">Welcome to Evallm!</h2>
 
             {/* LOGIN FORM */}
             <form onSubmit={handleSignIn} className="space-y-4">
-              <div>
-                
-              </div>
               <div>
                 <input
                   type="email"
@@ -340,7 +381,7 @@ export default function Home() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email..."
-                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
                   required
                 />
               </div>
@@ -351,7 +392,7 @@ export default function Home() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password..."
-                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
+                  className="mt-1 block w-full px-3 py-2 border border-emerald-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-m text-black"
                   required
                 />
               </div>
