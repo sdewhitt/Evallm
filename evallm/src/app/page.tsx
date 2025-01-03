@@ -86,7 +86,7 @@ export default function Home() {
 
       // Calculate/Update the LLM Statistics
       setIsViewingLLMStats(false);
-      const fetchedStats = await fetchLLMStats(data.prompts.reverse());
+      const fetchedStats = await fetchLLMStats(data.prompts);
       setLLMStatistics(fetchedStats);
 
     } catch (error) {
@@ -169,6 +169,7 @@ export default function Home() {
 
   const calculateLLMStats = async (LLM: string, experiments: Experiment[]) => {
 
+    let avgResponseTime = 0;
     let numResponses = 0;
     let avgSimilarity = 0;
     let avgBleu = 0;
@@ -178,6 +179,7 @@ export default function Home() {
       const curResponsesAndEvaluations = experiments[i].responsesAndEvaluations;
       if (!curResponsesAndEvaluations[LLM]) { continue; }
       const curEval = curResponsesAndEvaluations[LLM].evaluation;
+      avgResponseTime += curEval.responseTime;
       numResponses++;
       avgSimilarity += curEval.similarity;
       avgBleu += curEval.bleu || 0;
@@ -185,6 +187,7 @@ export default function Home() {
     }
 
     if (numResponses !== 0) {
+      avgResponseTime /= numResponses;
       avgSimilarity /= numResponses;
       avgBleu /= numResponses;
       avgRouge /= numResponses;
@@ -192,6 +195,7 @@ export default function Home() {
 
 
     return {
+      avgResponseTime: avgResponseTime.toFixed(0),
       numResponses: numResponses,
       avgSimilarity: (avgSimilarity * 100).toFixed(1),
       avgBleu: (avgBleu * 100).toFixed(1),
@@ -226,10 +230,9 @@ export default function Home() {
   const formatEvaluation = (evaluation: Experiment["responsesAndEvaluations"]["model"]["evaluation"]) => {
     const responseTime = `Reponse time: ${evaluation.responseTime.toFixed(0)}ms\n`;
     const similarityPercent = `Similarity: ${(evaluation.similarity * 100).toFixed(0)}%\n`;
-    const bleuScore = `BLEU Score: ${evaluation.bleu !== null ? (evaluation.bleu * 100).toFixed(0) + "%": "N/A"}\n`;
+    const bleuScore = `BLEU Score: ${((evaluation.bleu || 0) * 100).toFixed(0)}%\n`;
 
     const rougeAverage = evaluation.rouge.reduce((acc, score) => acc + (score || 0), 0) / evaluation.rouge.length;
-
     const rougeScore = `ROUGE Score: ${(rougeAverage * 100).toFixed(0)}%\n`;
 
     return responseTime + similarityPercent + bleuScore + rougeScore;
