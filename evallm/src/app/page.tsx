@@ -164,14 +164,14 @@ export default function Home() {
 
     return responseTime + similarityPercent + bleuScore + rougeScore;
   }
-
+  //<h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>
   return (
     <div className="min-h-screen flex bg-stone-700">
       
       {/* Top Bar */}
       <div className="fixed top-0 w-full justify-between">
-        <div className="absolute inset-0 bg-stone-900  p-6 h-20 border-b border-gray-950">
-          <h1 className="text-xl font-semibold text-white text-center"> Evallm </h1>  
+        <div className="absolute inset-0 bg-stone-900  p-3 h-20 border-b border-gray-950">
+          <img src="/EvallmLogo.png" alt="Evallm" className="mx-auto w-36 h-14" />
         </div> 
         
 
@@ -190,12 +190,12 @@ export default function Home() {
         <div className="flex-1 pt-20 pb-16 ">
 
           
-          <div className="flex p-4  justify-center items-center">
-            <div className="flex-1">
+          <div className="flex p-4  justify-center items-center space-x-96">
+            <div className="flex-1 border-stone-900 bg-stone-800 rounded-xl p-4 m-6">
               <h2 className="text-2xl font-semibold text-emerald-500 text-center">User Prompt</h2>
               <p className="text-stone-100 text-center">{experiment.prompt}</p>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 border-stone-900 bg-stone-800 rounded-xl p-4 m-6">
               <h2 className="text-2xl font-semibold text-emerald-500 text-center">Expected Output</h2>
               <p className="text-stone-100 text-center">{experiment.expected}</p>
             </div>
@@ -227,34 +227,6 @@ export default function Home() {
       )}
       
 
-      {/* Sidebar */}
-      {isSidebarVisible && (
-        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border-b border-stone-900">
-
-          <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
-            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
-              Prompt Analytics
-            </button>
-          </div>
-
-          {/* Display Prompts:*/}
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          
-              {experimentArray.map((experiment, index) => (
-                <button 
-                  key={experiment.prompt} 
-                  className="text-left p-2 bg-emerald-800 rounded-xl mb-2 hover:bg-emerald-900 transition-all"
-                  onClick={() => switchDisplayPrompt(index)}>
-                  <h2 className="text-lg text-stone-100">{experiment.prompt}</h2>
-                </button>
-              ))}
-
-          </div>
-
-
-        </div>
-
-      )}
 
       {/* Error Box */}
       {error && (
@@ -295,7 +267,7 @@ export default function Home() {
               onChange={e => setMessage(e.target.value)}
               onKeyPress={e => e.key === "Enter" && handleSubmit()}
               placeholder="User Prompt..."
-              className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
+              className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
             />
             <input
               type="text"
@@ -303,7 +275,7 @@ export default function Home() {
               onChange={e => setExpectedOutput(e.target.value)}
               onKeyPress={e => e.key === "Enter" && message && handleSubmit()}
               placeholder="Expected Output..."
-              className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
+              className="flex-1 rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:border-transparent placeholder-stone-400"
             />
 
 
@@ -322,6 +294,34 @@ export default function Home() {
       </div>
 
 
+      {/* Sidebar */}
+      {isSidebarVisible && (
+        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border-b border-stone-900">
+
+          <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
+            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
+              Prompt Analytics
+            </button>
+          </div>
+
+          {/* Display Prompts:*/}
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          
+              {experimentArray.map((experiment, index) => (
+                <button 
+                  key={experiment.prompt} 
+                  className="text-left p-2 bg-emerald-800 rounded-xl mb-2 hover:bg-emerald-900 transition-all"
+                  onClick={() => switchDisplayPrompt(index)}>
+                  <h2 className="text-lg text-stone-100">{experiment.prompt}</h2>
+                </button>
+              ))}
+
+          </div>
+
+
+        </div>
+
+      )}
 
       {!isLoggedIn &&
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
