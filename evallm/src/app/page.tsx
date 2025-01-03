@@ -154,7 +154,7 @@ export default function Home() {
 
   const fetchLLMStats = async (experiments = experimentArray) => {
     try {
-      let llmStats: { [key: string]: any } = {};
+      const llmStats: { [key: string]: any } = {};
       for (const LLM of models) {
         const stats = await calculateLLMStats(LLM, experiments);
         llmStats[LLM] = stats;
