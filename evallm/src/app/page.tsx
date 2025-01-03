@@ -20,6 +20,8 @@ interface Experiment {
   };
 }
 
+
+
 export default function Home() {
 
   const [message, setMessage] = useState("");
@@ -90,6 +92,7 @@ export default function Home() {
     setMessage("");
     setExpectedOutput("");
     setIsLoading(true);
+    setExperiment(null);
     try {
       if (!message.trim() || !expectedOutput.trim()) throw new Error("Please enter a user prompt and an expected output.");
 
@@ -114,7 +117,7 @@ export default function Home() {
       
       setExperimentArray(prevArray => [data.experiment, ...prevArray]);
       setExperiment(experimentArray[0]);
-      // Display each LLM response
+
 
 
 
@@ -138,8 +141,20 @@ export default function Home() {
     toggleSidebar();
   };
 
+  const formatEvaluation = (evaluation: Experiment["responsesAndEvaluations"]["model"]["evaluation"]) => {
+    const responseTime = `Reponse time: ${evaluation.responseTime.toFixed(0)}ms\n`;
+    const similarityPercent = `Similarity: ${(evaluation.similarity * 100).toFixed(0)}%\n`;
+    const bleuScore = `BLEU Score: ${evaluation.bleu !== null ? (evaluation.bleu * 100).toFixed(0) + "%": "N/A"}\n`;
+
+    const rougeAverage = evaluation.rouge.reduce((acc, score) => acc + (score || 0), 0) / evaluation.rouge.length;
+
+    const rougeScore = `ROUGE Score: ${(rougeAverage * 100).toFixed(0)}%\n`;
+
+    return responseTime + similarityPercent + bleuScore + rougeScore;
+  }
+
   return (
-    <div className="min-h-screen flex bg-stone-800">
+    <div className="min-h-screen flex bg-stone-700">
       
       {/* Top Bar */}
       <div className="fixed top-0 w-full justify-between">
@@ -160,26 +175,40 @@ export default function Home() {
 
       {/* Main Content */}
       {experiment && (
-        <div className="flex-1 pt-20 pb-16">
-          <div className="p-4">
-            <h2 className="text-2xl font-semibold text-stone-100">User Prompt</h2>
-            <p className="text-stone-100">{experiment.prompt}</p>
+        <div className="flex-1 pt-20 pb-16 ">
+
+          
+          <div className="flex p-4  justify-center items-center">
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-stone-100 text-center">User Prompt</h2>
+              <p className="text-stone-100 text-center">{experiment.prompt}</p>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-stone-100 text-center">Expected Output</h2>
+              <p className="text-stone-100 text-center">{experiment.expected}</p>
+            </div>
           </div>
 
-          <div className="p-4">
-            <h2 className="text-2xl font-semibold text-stone-100">Expected Output</h2>
-            <p className="text-stone-100">{experiment.expected}</p>
-          </div>
-
-          <div className="p-4">
+          <div className="p-4 flex flex-col items-center justify-center">
             <h2 className="text-2xl font-semibold text-stone-100">Responses and Evaluations</h2>
             {experiment && Object.entries(experiment.responsesAndEvaluations).map(([model, data]) => (
-              <div key={model} className="border border-stone-900 p-4 rounded-xl mb-4">
-                <h3 className="text-xl font-semibold text-stone-100">{model}</h3>
-                <pre className="text-stone-100">{data.response /*JSON.stringify(data, null, 2)*/}</pre>
+              <div key={model} className="flex border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 max-w-md w-full overflow-x-auto">
+                <div className="flex-1 p-2">
+                  <h3 className="text-xl font-semibold text-stone-100">{model}</h3>
+                  <pre className="text-stone-100 whitespace-pre-wrap">{data.response /*JSON.stringify(data, null, 2)*/}</pre>
+                </div>
+
+                <div className="flex-1 p-2">
+                  <h3 className="text-xl font-semibold text-stone-100">Evaluation Metrics</h3>
+                  <pre className="text-stone-100 whitespace-pre-wrap">{formatEvaluation(data.evaluation)}</pre>
+                </div>
+
               </div>
             ))}
           </div>
+
+
+          
         </div>
       )}
       
