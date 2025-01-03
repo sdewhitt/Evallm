@@ -21,6 +21,16 @@ interface Experiment {
 }
 
 const models = ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+const defaultStatistics: { [key: string]: number} = {
+  numResponses: 0,
+  avgSimilarity: 0,
+  avgBleu: 0,
+  avgRouge: 0,
+}
+const defaultModelStatistics: { [key: string]: { [key: string]: number} } = models.reduce((acc: { [key: string]: { [key: string]: number } }, model) => {
+  acc[model] = { ...defaultStatistics };
+  return acc;
+}, {});
 
 export default function Home() {
 
@@ -47,6 +57,7 @@ export default function Home() {
   const [experiment, setExperiment] = useState<Experiment | null>(null);
 
   const [isViewingLLMStats, setIsViewingLLMStats] = useState(false);
+  const [llmStatistics, setLLMStatistics] = useState<{ [key: string]: { [key: string]: number} }>(defaultModelStatistics);
 
 
   /* ================================= Authentication ================================= */
@@ -72,6 +83,11 @@ export default function Home() {
       // Set the user history
       setExperimentArray(data.prompts.reverse());
 
+
+      // Calculate/Update the LLM Statistics
+      setIsViewingLLMStats(false);
+      const fetchedStats = await fetchLLMStats(data.prompts.reverse());
+      setLLMStatistics(fetchedStats);
 
     } catch (error) {
       setLoginError(`Please enter a valid email/password.`);
@@ -125,6 +141,8 @@ export default function Home() {
 
 
       // Calculate/Update the LLM Statistics
+      const fetchedStats = await fetchLLMStats();
+      setLLMStatistics(fetchedStats);
 
     } catch (error) {
       //console.error("Error:", error instanceof Error ? error.message : "unknown");
@@ -134,18 +152,51 @@ export default function Home() {
     }
   };
 
-  const fetchLLMStats = async () => {
+  const fetchLLMStats = async (experiments = experimentArray) => {
     try {
-      
+      let llmStats: { [key: string]: any } = {};
+      for (const LLM of models) {
+        const stats = await calculateLLMStats(LLM, experiments);
+        llmStats[LLM] = stats;
+      }
 
+      return llmStats;
     } catch (error) {
       setError(`${error instanceof Error ? error.message : "unknown"}`);
     }
+    return defaultModelStatistics;
   }
 
-  const calculateLLMStats = async (LLM: string) => {
+  const calculateLLMStats = async (LLM: string, experiments: Experiment[]) => {
 
-    
+    let numResponses = 0;
+    let avgSimilarity = 0;
+    let avgBleu = 0;
+    let avgRouge = 0;
+
+    for (let i = 0; i < experiments.length; i++) {
+      const curResponsesAndEvaluations = experiments[i].responsesAndEvaluations;
+      if (!curResponsesAndEvaluations[LLM]) { continue; }
+      const curEval = curResponsesAndEvaluations[LLM].evaluation;
+      numResponses++;
+      avgSimilarity += curEval.similarity;
+      avgBleu += curEval.bleu || 0;
+      avgRouge += curEval.rouge.reduce((acc, score) => acc + (score || 0), 0);
+    }
+
+    if (numResponses !== 0) {
+      avgSimilarity /= numResponses;
+      avgBleu /= numResponses;
+      avgRouge /= numResponses;
+    }
+
+
+    return {
+      numResponses: numResponses,
+      avgSimilarity: (avgSimilarity * 100).toFixed(1),
+      avgBleu: (avgBleu * 100).toFixed(1),
+      avgRouge: (avgRouge * 100).toFixed(1),
+    };
 
   }
 
@@ -186,6 +237,8 @@ export default function Home() {
 
   const toggleViewLLMStats = () => {
     setIsViewingLLMStats(!isViewingLLMStats);
+    setIsSidebarVisible(false);
+    clearExperiment();
   };
   
 
@@ -253,14 +306,21 @@ export default function Home() {
         </div>
       )}
       
-      {/* View LLM Stats */}
+      {/* View LLM Stats llmStatistics*/}
       {isViewingLLMStats && (
       <div className="flex-1 pt-20 pb-16 ">
 
         <div className="p-4 flex flex-col items-center justify-center">
           <h2 className="text-3xl font-semibold text-emerald-200 p-4">LLM Statistics</h2>
           <div className="flex overflow-x-auto space-x-4">
-            
+            {Object.entries(llmStatistics).map(([model, data]) => (
+                <div key={model} className="flex-none border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-96 overflow-x-auto">
+                  <div className="flex-1 p-2">
+                    <h3 className="text-xl font-semibold text-emerald-500">{model}</h3>
+                    <pre className="text-stone-100 whitespace-pre-wrap">{JSON.stringify(data, null, 2)}</pre>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
 
