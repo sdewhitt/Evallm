@@ -398,13 +398,16 @@ export default function Home() {
         <div className="max-w-3xl mx-auto">
           <div className="flex gap-3 items-center">
 
-            <button
-              onClick={clearExperiment}
-              disabled={isClearing}
-              className="bg-rose-800 text-white px-5 py-3 rounded-xl hover:bg-rose-900 transition-all disabled:bg-rose-950 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isClearing ? "Clearing..." : "Clear Output"}
-            </button>
+            {experiment && (
+                          <button
+                          onClick={clearExperiment}
+                          disabled={isClearing}
+                          className="bg-rose-800 text-white px-5 py-3 rounded-xl hover:bg-rose-900 transition-all disabled:bg-rose-950 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isClearing ? "Clearing..." : "Clear Output"}
+                        </button>
+            )}
+
 
             <input
               type="text"
