@@ -18,7 +18,13 @@ export async function POST(req: Request) {
             experiments: body.experimentArray,
         };
 
-        const systemPrompt = "You are a tool that generates helpful insights for users regarding their data, searching for patterns that the user may not notice at first sight. The data you will be fed is for an LLM evaluation platform where users input both a prompt and an expected output to assess which model best fits their needs. Be concise and clear";
+
+        // Splitting sentences for easier readability
+        const personality = "You are a tool that generates helpful insights for users regarding their data, searching for patterns that the user may not notice at first sight while being concise and clear. "
+        const dataDescription = "The data you will be fed is for an LLM evaluation platform where users input both a prompt and an expected output to assess which model best fits their needs. "
+        const bleuRougeInfo = "The BLEU and ROUGE scores will be from 0 to 100 in this context compared to 0 to 1 to represent percentages. ";
+
+        const systemPrompt = personality + dataDescription + bleuRougeInfo;
         const llmResponse = await groqClient.chat.completions.create({
                 messages: [
                     { role: "system", content: systemPrompt },

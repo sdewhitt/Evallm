@@ -353,7 +353,10 @@ export default function Home() {
           </div>
           
           <div className="justify-center border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-[70%] mx-auto">
-            <h3 className="text-xl font-semibold text-emerald-500">Analysis</h3>
+            <div className="justify-center items-center flex">
+              <h3 className="text-xl font-semibold text-emerald-500">Analysis</h3>
+            </div>
+            
             {/*<pre className="text-stone-100 whitespace-pre-wrap">{llmCumulativeAnalysis}</pre>*/}
             <MarkdownRenderer content={llmCumulativeAnalysis}/>
           </div>
