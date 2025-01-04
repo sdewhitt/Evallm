@@ -8,7 +8,7 @@
 }
 
 .markdown-content p {
-    @apply text-base text-stone-100 mb-2;
+    @apply text-base text-stone-100 mb-1 mt-5;
 }
 
 .markdown-content pre {
