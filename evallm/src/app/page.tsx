@@ -152,6 +152,25 @@ export default function Home() {
     }
   };
 
+
+
+  const fetchLLMCumulativeAnalysis = async () => {
+    try {
+
+      const response = await fetch("/api/analytics", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ llmStatistics: llmStatistics, experiments: experimentArray }),
+      });
+
+    } catch (error) {
+
+    }
+
+  }
+
   const fetchLLMStats = async (experiments = experimentArray) => {
     try {
       const llmStats: { [key: string]: any } = {};
@@ -407,30 +426,34 @@ export default function Home() {
 
       {/* Sidebar */}
       {isSidebarVisible && (
-        <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border-b border-stone-900">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="flex flex-col fixed inset-y-0 left-0 w-64 bg-emerald-950 shadow-lg border-b border-stone-900">
 
-          <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
-            <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
-              Prompt Analytics
-            </button>
+            <div className = "bg-emerald-900 p-4 border-b border-emerald-950">
+              <button className="text-xl font-semibold text-white hover:bg-emerald-950 transition-all p-2 rounded-xl" onClick={toggleSidebar}>
+                Prompt Analytics
+              </button>
+            </div>
+
+            {/* Display Prompts:*/}
+            <div className="flex-1 overflow-y-auto p-4">
+
+                {experimentArray.map((experiment, index) => (
+                  <button 
+                    key={experiment.prompt} 
+                    className="text-left p-2 bg-emerald-800 rounded-xl mb-2 hover:bg-emerald-900 transition-all"
+                    onClick={() => switchDisplayPrompt(index)}>
+                    <h2 className="text-lg text-stone-100">{experiment.prompt}</h2>
+                  </button>
+                ))}
+
+            </div>
+
+
           </div>
-
-          {/* Display Prompts:*/}
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          
-              {experimentArray.map((experiment, index) => (
-                <button 
-                  key={experiment.prompt} 
-                  className="text-left p-2 bg-emerald-800 rounded-xl mb-2 hover:bg-emerald-900 transition-all"
-                  onClick={() => switchDisplayPrompt(index)}>
-                  <h2 className="text-lg text-stone-100">{experiment.prompt}</h2>
-                </button>
-              ))}
-
-          </div>
-
 
         </div>
+        
 
       )}
 
