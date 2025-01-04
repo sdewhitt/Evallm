@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import './globals.css';
+import MarkdownRenderer from "./MarkdownRenderer";
+
 
 interface Experiment {
   prompt: string;
@@ -21,13 +23,13 @@ interface Experiment {
 }
 
 const models = ['llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-const defaultStatistics: { [key: string]: number} = {
+const defaultStatistics: { [key: string]: number | string} = {
   numResponses: 0,
   avgSimilarity: 0,
   avgBleu: 0,
   avgRouge: 0,
 }
-const defaultModelStatistics: { [key: string]: { [key: string]: number} } = models.reduce((acc: { [key: string]: { [key: string]: number } }, model) => {
+const defaultModelStatistics: { [key: string]: { [key: string]: number | string} } = models.reduce((acc: { [key: string]: { [key: string]: number | string} }, model) => {
   acc[model] = { ...defaultStatistics };
   return acc;
 }, {});
@@ -57,8 +59,8 @@ export default function Home() {
   const [experiment, setExperiment] = useState<Experiment | null>(null);
 
   const [isViewingLLMStats, setIsViewingLLMStats] = useState(false);
-  const [llmStatistics, setLLMStatistics] = useState<{ [key: string]: { [key: string]: number} }>(defaultModelStatistics);
-
+  const [llmStatistics, setLLMStatistics] = useState<{ [key: string]: { [key: string]: number | string} }>(defaultModelStatistics);
+  const [llmCumulativeAnalysis, setLLMCumulativeAnalysis] = useState<string>("");
 
   /* ================================= Authentication ================================= */
   const handleSignIn = async (e: React.FormEvent) => {
@@ -88,6 +90,8 @@ export default function Home() {
       setIsViewingLLMStats(false);
       const fetchedStats = await fetchLLMStats(data.prompts);
       setLLMStatistics(fetchedStats);
+      const fetchedAnalysis = await fetchLLMCumulativeAnalysis(fetchedStats, data.prompts);
+      setLLMCumulativeAnalysis(fetchedAnalysis);
 
     } catch (error) {
       setLoginError(`Please enter a valid email/password.`);
@@ -142,7 +146,9 @@ export default function Home() {
 
       // Calculate/Update the LLM Statistics
       const fetchedStats = await fetchLLMStats();
+      const fetchedAnalysis = await fetchLLMCumulativeAnalysis();
       setLLMStatistics(fetchedStats);
+      setLLMCumulativeAnalysis(fetchedAnalysis);
 
     } catch (error) {
       //console.error("Error:", error instanceof Error ? error.message : "unknown");
@@ -154,26 +160,23 @@ export default function Home() {
 
 
 
-  const fetchLLMCumulativeAnalysis = async () => {
-    try {
+  const fetchLLMCumulativeAnalysis = async (stats = defaultModelStatistics , experiments = experimentArray) => {
+    const response = await fetch("/api/analytics", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ llmStatistics: llmStatistics, experiments: experimentArray }),
+    });
 
-      const response = await fetch("/api/analytics", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ llmStatistics: llmStatistics, experiments: experimentArray }),
-      });
+    const data = await response.json();
 
-    } catch (error) {
-
-    }
-
+    return data.Analysis;
   }
 
   const fetchLLMStats = async (experiments = experimentArray) => {
     try {
-      const llmStats: { [key: string]: any } = {};
+      const llmStats: { [key: string]: {[key: string]: number | string} } = {};
       for (const LLM of models) {
         const stats = await calculateLLMStats(LLM, experiments);
         llmStats[LLM] = stats;
@@ -257,7 +260,7 @@ export default function Home() {
     return responseTime + similarityPercent + bleuScore + rougeScore;
   }
 
-  const formatLLMStats = (stats: { [key: string]: number} ) => {
+  const formatLLMStats = (stats: { [key: string]: number | string} ) => {
     return `~${stats.avgResponseTime}ms\n${stats.numResponses} responses\n${stats.avgSimilarity}% similarity\n${stats.avgBleu}% BLEU\n${stats.avgRouge}% ROUGE`;
   }
 
@@ -347,6 +350,12 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+          </div>
+          
+          <div className="justify-center border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-[70%] mx-auto">
+            <h3 className="text-xl font-semibold text-emerald-500">Analysis</h3>
+            {/*<pre className="text-stone-100 whitespace-pre-wrap">{llmCumulativeAnalysis}</pre>*/}
+            <MarkdownRenderer content={llmCumulativeAnalysis}/>
           </div>
         </div>
 
