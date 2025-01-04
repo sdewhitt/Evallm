@@ -90,8 +90,6 @@ export default function Home() {
       setIsViewingLLMStats(false);
       const fetchedStats = await fetchLLMStats(data.prompts);
       setLLMStatistics(fetchedStats);
-      const fetchedAnalysis = await fetchLLMCumulativeAnalysis(fetchedStats, data.prompts);
-      setLLMCumulativeAnalysis(fetchedAnalysis);
 
     } catch (error) {
       setLoginError(`Please enter a valid email/password.`);
@@ -146,9 +144,10 @@ export default function Home() {
 
       // Calculate/Update the LLM Statistics
       const fetchedStats = await fetchLLMStats();
-      const fetchedAnalysis = await fetchLLMCumulativeAnalysis();
+      //const fetchedAnalysis = await fetchLLMCumulativeAnalysis();
+      //setLLMCumulativeAnalysis(fetchedAnalysis);
       setLLMStatistics(fetchedStats);
-      setLLMCumulativeAnalysis(fetchedAnalysis);
+      
 
     } catch (error) {
       //console.error("Error:", error instanceof Error ? error.message : "unknown");
@@ -166,7 +165,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ llmStatistics: llmStatistics, experiments: experimentArray }),
+      body: JSON.stringify({ llmStatistics: stats, experiments: experiments }),
     });
 
     const data = await response.json();
@@ -181,6 +180,10 @@ export default function Home() {
         const stats = await calculateLLMStats(LLM, experiments);
         llmStats[LLM] = stats;
       }
+
+      const fetchedAnalysis = await fetchLLMCumulativeAnalysis(llmStats, experiments);
+      setLLMCumulativeAnalysis(fetchedAnalysis);
+
 
       return llmStats;
     } catch (error) {
