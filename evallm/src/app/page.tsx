@@ -473,7 +473,7 @@ export default function Home() {
       )}
 
       {!isLoggedIn &&
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-85">
+        <div className="fixed inset-0 flex items-center justify-center bg-black">
           <div className="bg-stone-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold text-emerald-500">Welcome to Evallm!</h2>
 
