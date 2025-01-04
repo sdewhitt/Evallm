@@ -238,6 +238,10 @@ export default function Home() {
     return responseTime + similarityPercent + bleuScore + rougeScore;
   }
 
+  const formatLLMStats = (stats: { [key: string]: number} ) => {
+    return `~${stats.avgResponseTime}ms\n${stats.numResponses} responses\n${stats.avgSimilarity}% similarity\n${stats.avgBleu}% BLEU\n${stats.avgRouge}% ROUGE`;
+  }
+
   const toggleViewLLMStats = () => {
     setIsViewingLLMStats(!isViewingLLMStats);
     setIsSidebarVisible(false);
@@ -320,7 +324,7 @@ export default function Home() {
                 <div key={model} className="flex-none border border-stone-900 bg-stone-800 p-4 rounded-xl mb-4 w-96 overflow-x-auto">
                   <div className="flex-1 p-2">
                     <h3 className="text-xl font-semibold text-emerald-500">{model}</h3>
-                    <pre className="text-stone-100 whitespace-pre-wrap">{JSON.stringify(data, null, 2)}</pre>
+                    <pre className="text-stone-100 whitespace-pre-wrap">{formatLLMStats(data)}</pre>
                   </div>
                 </div>
               ))}
