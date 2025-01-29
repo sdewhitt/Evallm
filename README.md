@@ -25,6 +25,7 @@ Link: https://evallm.vercel.app
 
 ### Future Goals
 - Proper encryption during authentication
+- Experiment with letting users implement their own system prompts
 - Statistical visualizations such as line graphs for the cumulative analytics
 - More analysis metrics
    - Adjusted method for finding BLEU score so that its outputs are more unique
